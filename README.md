@@ -1,11 +1,8 @@
 # Portal de Empleado (100% local)
 
 Portal de empleado sencillo con **login simulado** y **perfil editable**,
-construido para funcionar por completo en local. La gracia del proyecto es que
-hay **dos backends** (Java y Go) y **dos frontends** (React y Vue) que hablan el
-**mismo contrato de API** y comparten la **misma base de datos PostgreSQL**
-(un único contenedor), de modo que cualquier frontend puede funcionar contra
-cualquier backend.
+construido para funcionar por completo en local. La aplicación usa un backend
+Spring Boot, un frontend React y una base de datos PostgreSQL.
 
 > **Estado actual**
 >
@@ -13,11 +10,9 @@ cualquier backend.
 > |---|---|
 > | `shared/openapi.yaml` (contrato) | ✅ Listo |
 > | `backend-java` (Spring Boot 4.1.0 / Java 25) | ✅ Listo |
-> | `backend-go` (Go + pgx) | ✅ Listo |
 > | `frontend-react` (React 19.2 + Vite 8) | ✅ Listo |
-> | `frontend-vue` (Vue 3 + Vite 8) | ✅ Listo |
-> | `postgres` (PostgreSQL 16, contenedor compartido) | ✅ Listo |
-> | `docker-compose.*` | ✅ Listos |
+> | `postgres` (PostgreSQL 16) | ✅ Listo |
+> | Docker Compose | ✅ Listo |
 > | `Makefile` | ✅ Listo |
 
 ## Estructura
@@ -25,54 +20,40 @@ cualquier backend.
 ```
 .
 ├── backend-java/                   Spring Boot 4.1.0 (Java 25) + Dockerfile   → 8080
-├── backend-go/                     Go + Dockerfile                            → 8081
 ├── frontend-react/                 React 19.2 + Vite 8 (Docker: nginx)       → 5173
-├── frontend-vue/                   Vue 3 + Vite 8 (Docker: nginx)            → 5174
-├── shared/openapi.yaml             Contrato de API común a ambos backends
-├── shared/migrations/              Migraciones SQL del esquema (común a ambos)
+├── shared/openapi.yaml             Contrato de la API
+├── shared/migrations/              Migraciones SQL del esquema
 ├── scripts/contract-test.mjs       Tests de contrato (make verify)
-├── docker-compose.yml              Servicio postgres COMPARTIDO (5432)
+├── docker-compose.yml              Servicio PostgreSQL (5432)
 ├── docker-compose.java-react.yml   Stack backend-java + frontend-react
-├── docker-compose.go-vue.yml       Stack backend-go + frontend-vue
 ├── Makefile                        Atajos de instalación, dev, verify y docker
 └── AGENTS.md / CLAUDE.md           Guía para agentes de IA (receta de features)
 ```
 
 ## Arquitectura
 
-Cada servicio publica **siempre** su puerto en el host: React `:5173`, Vue
-`:5174`, Java `:8080`, Go `:8081` y Postgres `:5432`. En Docker los frontends
-son **builds estáticos servidos por nginx** (en esos mismos puertos); el
-navegador llama a la API directamente al puerto publicado del backend — nginx
-solo sirve ficheros, no hace de proxy.
-
-Los dos stacks se pueden levantar por separado o a la vez. Ambos incluyen el
-mismo servicio Postgres y comparten el contrato OpenAPI y las migraciones.
-React apunta por defecto al backend Java; Vue, al backend Go.
+React publica `:5173`, Java `:8080` y PostgreSQL `:5432`. En Docker, el
+frontend se sirve como build estático con nginx. El navegador llama a la API
+directamente al puerto publicado del backend.
 
 ```mermaid
 flowchart LR
     navegador(["Navegador"])
     react["React · :5173"]
     java["Backend Java · :8080"]
-    vue["Vue · :5174"]
-    go["Backend Go · :8081"]
     contrato["shared/openapi.yaml"]
     migraciones["shared/migrations"]
     db[("PostgreSQL · :5432")]
 
     navegador --> react --> java --> db
-    navegador --> vue --> go --> db
     contrato -.->|"mismo contrato"| java
-    contrato -.->|"mismo contrato"| go
     migraciones -.->|"esquema común"| java
-    migraciones -.->|"esquema común"| go
 ```
 
 ## Contrato de API
 
-Un único [`shared/openapi.yaml`](shared/openapi.yaml) define el contrato que
-**ambos backends implementan de forma idéntica** (mismas rutas y formas JSON):
+[`shared/openapi.yaml`](shared/openapi.yaml) define las rutas y formas JSON
+que implementa el backend Java:
 
 | Método | Ruta          | Descripción                              |
 |--------|---------------|------------------------------------------|
@@ -85,14 +66,11 @@ Un único [`shared/openapi.yaml`](shared/openapi.yaml) define el contrato que
 | PUT    | `/api/certificaciones/{id}` | Actualiza una certificación.   |
 | DELETE | `/api/certificaciones/{id}` | Elimina una certificación.     |
 
-Java y Go implementan cada uno el mismo contrato en su lenguaje; **no se
-comparte código entre ellos, solo el contrato**.
-
 ### Login simulado
 
 - El único empleado sembrado (`id=1`) tiene el username **`admin`**.
 - Se entra si el `username` coincide; **cualquier contraseña es válida**.
-- La sesión se mantiene con una cookie: `JSESSIONID` en Java, `session_id` en Go.
+- La sesión se mantiene con la cookie `JSESSIONID`.
 - El frontend debe hacer las peticiones con `credentials: 'include'`.
 
 ### Perfil del empleado (7 campos)
@@ -101,58 +79,48 @@ comparte código entre ellos, solo el contrato**.
 
 ## Base de datos
 
-Un único servicio **PostgreSQL 16** en su propio contenedor (definido en
-[`docker-compose.yml`](docker-compose.yml)), **compartido** por ambos backends:
-los dos se conectan a la misma BBDD `portal` (usuario/clave `portal` por
-defecto, configurables con `DB_*`). Los datos persisten en el volumen Docker
-`portal-db-data`, no en el sistema de ficheros del repo.
+Un servicio **PostgreSQL 16** en su propio contenedor (definido en
+[`docker-compose.yml`](docker-compose.yml)). El backend Java se conecta a la
+BBDD `portal` (usuario/clave `portal` por defecto, configurables con `DB_*`).
+Los datos persisten en el volumen Docker `portal-db-data`, no en el sistema de
+ficheros del repo.
 
 El esquema lo definen las migraciones de
-[`shared/migrations/`](shared/migrations): ficheros `NNN_descripcion.sql` (en
-sintaxis Postgres) que **ambos backends aplican al arrancar** (la tabla
-`schema_migration` registra cuáles corrieron ya, así el primero que arranca
-las aplica y el otro las reconoce). Hibernate está en `ddl-auto=none` — ni
-Java ni Go crean esquema por su cuenta. Para cambiar el esquema: añade una
-migración nueva, nunca edites una aplicada. La siembra de datos demo
-(empleado + certificaciones) sigue en el código de cada backend y es idéntica
-en los dos.
+[`shared/migrations/`](shared/migrations): ficheros `NNN_descripcion.sql` en
+sintaxis PostgreSQL que el backend Java aplica al arrancar. La tabla
+`schema_migration` registra las migraciones ejecutadas. Hibernate está en
+`ddl-auto=none`; el esquema se crea exclusivamente mediante migraciones. Para
+cambiarlo, añade una migración nueva y nunca edites una ya aplicada. Los datos
+demo (empleado y certificaciones) se siembran desde el backend Java.
 
 ## Puesta en marcha
 
-Requisitos según lo que quieras arrancar: **Java 25 + Maven**, **Go 1.24+**,
-**Node 22+**, y **Docker** (al menos para el Postgres). Hay un `Makefile` con
-atajos — `make help` los lista.
+Requisitos: **Java 25 + Maven**, **Node 22+** y **Docker** (al menos para
+PostgreSQL). El `Makefile` lista los atajos disponibles con `make help`.
 
-### En local (backends/frontends nativos + Postgres en Docker)
+### En local
 
 ```bash
-make db-up        # levanta SOLO el Postgres compartido (5432)
+make db-up        # levanta PostgreSQL (5432)
 
-make run-java     # backend Java   en http://localhost:8080
-make run-go       # backend Go     en http://localhost:8081
-make run-react    # frontend React en http://localhost:5173 (dev server, contra el Java)
-make run-vue      # frontend Vue   en http://localhost:5174 (dev server, contra el Go)
-# o todo a la vez (db-up incluido):
+make run-java     # backend Java en http://localhost:8080
+make run-react    # frontend React en http://localhost:5173
+# o ambos a la vez (incluye db-up):
 make dev
 ```
 
 ### Con Docker
 
-Cada stack incluye el `docker-compose.yml` base, así que el Postgres es el
-mismo levantes el stack que levantes (uno, otro, o los dos a la vez):
+El stack incluye PostgreSQL, backend Java y frontend React:
 
 ```bash
-make up-java-react     # postgres + backend Java (8080) + frontend React estático (5173)
-make up-go-vue         # postgres + backend Go   (8081) + frontend Vue estático   (5174)
-
-make down-java-react   # parar
-make down-go-vue
+make up-java-react     # PostgreSQL + backend Java + frontend React
+make down-java-react   # parar los servicios
 ```
 
-En Docker los frontends se sirven como **build estático con nginx** en los
-mismos puertos 5173/5174 (en local `make run-react`/`run-vue` siguen usando el
-dev server de Vite con hot-reload). `VITE_API_BASE` se pasa como *build-arg* y
-queda horneada en el build.
+En Docker React se sirve como **build estático con nginx** en el puerto 5173;
+en local `make run-react` usa el servidor de desarrollo Vite con hot-reload.
+`VITE_API_BASE` se pasa como *build-arg* y queda horneada en el build.
 
 ### Probar la API
 
@@ -174,25 +142,17 @@ curl -b cookies.txt -X PUT http://localhost:8080/api/me \
 curl -b cookies.txt -X POST http://localhost:8080/api/logout
 ```
 
-Cambia el puerto a `8081` para probar exactamente lo mismo contra el backend Go.
-
 ### Tests de contrato
 
-Con el/los backend(s) arrancados, `scripts/contract-test.mjs` ejecuta la misma
-batería de comprobaciones del contrato contra cada uno (login, perfil,
-CRUD de certificaciones, códigos de error) y deja la BBDD como estaba:
+Con el backend arrancado, `scripts/contract-test.mjs` comprueba login, perfil,
+CRUD de certificaciones y códigos de error; al terminar, restaura los datos
+que modifica:
 
 ```bash
-make verify-java   # contra el backend Java (8080)
-make verify-go     # contra el backend Go (8081)
-make verify        # contra ambos + comparación de paridad de respuestas
+make verify        # contra el backend Java (8080)
 ```
 
-El modo con dos backends comprueba además que ambos respondan con el mismo
-status y la misma forma de JSON en cada caso — la red de seguridad contra la
-divergencia entre implementaciones.
-
-## Backends
+## Backend
 
 ### `backend-java/` — Spring Boot 4.1.0 (Java 25)
 
@@ -202,18 +162,9 @@ por variables de entorno (`SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`,
 `DB_USER`, `DB_PASSWORD`, `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN`,
 `SEED_USERNAME`).
 
-### `backend-go/` — Go + pgx
+## Frontend
 
-Router con `net/http` (patrones método+ruta de Go 1.22+) y driver
-`jackc/pgx` vía `database/sql` (Go puro, sin CGO — se dockeriza en una imagen
-`distroless` minúscula). Sesión propia por cookie respaldada por un almacén en
-memoria. Mismas variables de entorno que el backend Java.
-
-## Frontends
-
-Ambos replican el diseño del portal original de Nunegal y comparten los mismos
-estilos (`styles.css`) y la misma lógica (`src/lib/`); solo cambian los
-componentes (JSX vs SFC). Pantallas:
+El frontend React replica el diseño del portal original de Nunegal. Incluye:
 
 - **Login** — logo, «Acceso al Portal del Empleado», usuario/contraseña.
 - **Datos del empleado** (pantalla inicial) — perfil con los 7 campos, editable.
@@ -224,14 +175,13 @@ componentes (JSX vs SFC). Pantallas:
   (modal) y borrado con confirmación. Sin adjuntar archivos.
 - **Resto de secciones** — mensaje animado de «Sección no disponible» para la demo.
 
-Detalles en [`frontend-react/README.md`](frontend-react/README.md) y
-[`frontend-vue/README.md`](frontend-vue/README.md).
+Más detalles en [`frontend-react/README.md`](frontend-react/README.md).
 
 ## Instrucciones para agentes
 
-Las reglas de implementación, paridad entre stacks y verificación para agentes
-están en [`AGENTS.md`](AGENTS.md). La guía también se aplica a Claude Code
-mediante [`CLAUDE.md`](CLAUDE.md).
+Las reglas de implementación y verificación para agentes están en
+[`AGENTS.md`](AGENTS.md). La guía también se aplica a Claude Code mediante
+[`CLAUDE.md`](CLAUDE.md).
 
 ## Fuera de alcance
 

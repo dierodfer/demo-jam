@@ -6,8 +6,8 @@ description: Escribe mensajes de commit en formato Conventional Commits, con tip
 # Commits Semanticos
 
 Usa `tipo(modulo): descripcion breve`. Escribe tipo y modulo en minusculas; el
-modulo identifica el area afectada, como `api`, `backend-go`, `frontend-vue`,
-`shared` o `docs`.
+modulo identifica el area afectada, como `api`, `backend-java`,
+`frontend-react`, `shared` o `docs`.
 
 Tipos habituales: `feat` (funcionalidad), `fix` (correccion), `docs`,
 `refactor`, `perf`, `style`, `test`, `build`, `ci`, `chore` y `revert`.
@@ -15,8 +15,8 @@ Tipos habituales: `feat` (funcionalidad), `fix` (correccion), `docs`,
 Ejemplos:
 
 ```text
-feat(frontend-vue): anadir consulta de certificaciones
-fix(backend-go): validar el empleado de la sesion
+feat(frontend-react): anadir consulta de certificaciones
+fix(backend-java): validar el empleado de la sesion
 docs(api): aclarar el formato de fechas
 refactor(backend-java): extraer el mapeo de certificaciones
 ```

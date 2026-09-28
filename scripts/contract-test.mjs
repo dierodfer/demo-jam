@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 // Test de contrato del Portal de Empleado.
 //
-// Ejecuta la misma batería de comprobaciones (shared/openapi.yaml) contra uno
-// o dos backends en marcha, y si son dos compara que ambos respondan con la
-// misma forma (status + claves del JSON). Deja la base de datos como estaba:
-// restaura el perfil y borra las certificaciones que crea.
+// Ejecuta la batería de comprobaciones (shared/openapi.yaml) contra el backend.
+// Deja la base de datos como estaba: restaura el perfil y borra las
+// certificaciones que crea.
 //
 // Uso:
-//   node scripts/contract-test.mjs http://localhost:8080                        # solo Java
-//   node scripts/contract-test.mjs http://localhost:8081                        # solo Go
-//   node scripts/contract-test.mjs http://localhost:8080 http://localhost:8081  # ambos + diff
+//   node scripts/contract-test.mjs http://localhost:8080
 //
 // Requiere Node 18+ (fetch nativo). Sin dependencias.
 
@@ -162,44 +159,23 @@ async function suite(base) {
 
 // ---- main ----
 
-const bases = process.argv.slice(2);
-if (bases.length < 1 || bases.length > 2) {
-  console.error('Uso: node scripts/contract-test.mjs <url-backend> [<url-backend-2>]');
+const urls = process.argv.slice(2);
+if (urls.length !== 1) {
+  console.error('Uso: node scripts/contract-test.mjs <url-backend>');
   process.exit(2);
 }
 
+const [base] = urls;
 let exitCode = 0;
-const resultados = [];
 
-for (const base of bases) {
-  console.log(`\n=== Contrato contra ${base} ===`);
-  try {
-    const res = await suite(base);
-    resultados.push({ base, ...res });
-    if (!res.ok) exitCode = 1;
-  } catch (e) {
-    console.error(`  ✗ No se pudo completar la batería: ${e.message}`);
-    console.error('    ¿Está el backend arrancado?');
-    exitCode = 1;
-    resultados.push(null);
-  }
-}
-
-// Comparación de forma entre los dos backends
-if (bases.length === 2 && resultados[0] && resultados[1]) {
-  console.log(`\n=== Paridad ${bases[0]} vs ${bases[1]} ===`);
-  const [a, b] = resultados;
-  let iguales = true;
-  for (let i = 0; i < a.checks.length; i++) {
-    const ca = a.checks[i];
-    const cb = b.checks[i];
-    if (!cb || ca.shape !== cb.shape) {
-      iguales = false;
-      console.log(`  ✗ «${ca.nombre}» difiere:\n      ${bases[0]}: ${ca.shape}\n      ${bases[1]}: ${cb?.shape}`);
-    }
-  }
-  if (iguales) console.log('  ✓ Ambos backends responden con el mismo status y la misma forma de JSON');
-  else exitCode = 1;
+console.log(`\n=== Contrato contra ${base} ===`);
+try {
+  const res = await suite(base);
+  if (!res.ok) exitCode = 1;
+} catch (e) {
+  console.error(`  ✗ No se pudo completar la batería: ${e.message}`);
+  console.error('    ¿Está el backend arrancado?');
+  exitCode = 1;
 }
 
 console.log(exitCode === 0 ? '\nCONTRATO OK' : '\nCONTRATO CON FALLOS');
