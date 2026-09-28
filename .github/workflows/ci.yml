@@ -78,11 +78,14 @@ jobs:
       - name: Arrancar backend Java
         run: nohup make run-java >/tmp/portal-backend.log 2>&1 </dev/null &
 
-      - name: Esperar a que Java esté listo
+      - name: Esperar a que termine la siembra de demo
         run: |
           for attempt in $(seq 1 60); do
-            status=$(curl -sS -o /dev/null -w '%{http_code}' http://localhost:8080/api/me || true)
-            if [ "$status" = "401" ]; then
+            status=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H 'Content-Type: application/json' \
+              -d '{"username":"admin","password":"ci"}' \
+              http://localhost:8080/api/login 2>/dev/null || true)
+            if [ "$status" = "200" ]; then
               exit 0
             fi
             sleep 2
