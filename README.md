@@ -152,6 +152,15 @@ que modifica:
 make verify        # contra el backend Java (8080)
 ```
 
+## Integración continua
+
+El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) se ejecuta
+en cada push y en los pull requests con destino a `main`. Comprueba Java,
+instala y construye React, valida Docker Compose y ejecuta los tests de contrato
+contra Java con PostgreSQL. Localmente puedes ejecutar `make test-java`,
+`make install-react-ci`, `make build-react` y, con el backend arrancado,
+`make verify`.
+
 ## Backend
 
 ### `backend-java/` — Spring Boot 4.1.0 (Java 25)

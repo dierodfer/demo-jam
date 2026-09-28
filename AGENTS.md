@@ -66,7 +66,10 @@ Ejecuta las comprobaciones pertinentes al cambio:
 
 ```bash
 make install
+make test-java
 make db-up
+make install-react-ci
+make build-react
 make verify
 ```
 
@@ -76,7 +79,7 @@ make verify
 Amplía `scripts/contract-test.mjs` al añadir endpoints. El test comprueba los
 códigos y formas JSON y limpia los datos que crea.
 
-Ejecuta `npm run build` en `frontend-react`. Para una funcionalidad de punta a
+Ejecuta `make build-react` en `frontend-react`. Para una funcionalidad de punta a
 punta, comprueba manualmente el login, la nueva sección, sus operaciones CRUD
 y la persistencia tras recargar.
 

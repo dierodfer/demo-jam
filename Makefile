@@ -3,7 +3,8 @@
 COMPOSE_BASE       = docker compose -f docker-compose.yml
 COMPOSE_JAVA_REACT = docker compose -f docker-compose.yml -f docker-compose.java-react.yml
 
-.PHONY: help install install-java install-react \
+.PHONY: help install install-java install-react install-react-ci \
+        test-java build-react \
         dev run-java run-react \
         db-up db-down verify verify-java \
         up-java-react down-java-react clean
@@ -19,8 +20,17 @@ install: install-java install-react ## Prepara Java y las dependencias de React
 install-java: ## Compila el backend Java (mvn package)
 	cd backend-java && mvn -B clean package -DskipTests
 
+test-java: ## Compila el backend Java y ejecuta sus tests (mvn verify)
+	cd backend-java && mvn -B verify
+
 install-react: ## Instala dependencias del frontend React
 	cd frontend-react && npm install
+
+install-react-ci: ## Instala dependencias React de forma reproducible (npm ci)
+	cd frontend-react && npm ci
+
+build-react: ## Construye el frontend React para producción
+	cd frontend-react && npm run build
 
 ## ---- Base de datos ----
 
