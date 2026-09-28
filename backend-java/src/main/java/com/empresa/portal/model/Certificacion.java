@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 
 /**
  * Conocimiento / certificación de un empleado. Nombres de tabla y columnas
- * fijados de forma explícita para coincidir con el esquema del backend Go.
+ * fijados de forma explícita para coincidir con las migraciones.
  */
 @Entity
 @Table(name = "certificacion")

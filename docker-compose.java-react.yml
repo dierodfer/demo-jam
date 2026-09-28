@@ -2,7 +2,7 @@
 #
 #   docker compose -f docker-compose.yml -f docker-compose.java-react.yml up --build
 #
-# El servicio postgres viene de docker-compose.yml (compartido con el stack Go+Vue).
+# El servicio postgres viene de docker-compose.yml.
 
 services:
   backend-java:

@@ -3,21 +3,16 @@ info:
   title: Portal de Empleado API
   version: "1.0.0"
   description: >
-    Contrato de API común para el Portal de Empleado. Este mismo contrato lo
-    implementan de forma independiente el backend Java (puerto 8080) y el
-    backend Go (puerto 8081). Cualquier frontend puede hablar con cualquier
-    backend indistintamente porque ambos exponen exactamente las mismas rutas
-    y el mismo JSON.
+    Contrato de API del Portal de Empleado, implementado por el backend Java
+    en el puerto 8080.
 
     Autenticación: login simulado. El username debe coincidir con el empleado
     sembrado en la base de datos; cualquier contraseña es válida. La sesión se
-    mantiene mediante una cookie (JSESSIONID en Java, session_id en Go).
+    mantiene mediante la cookie JSESSIONID.
 
 servers:
   - url: http://localhost:8080
     description: Backend Java
-  - url: http://localhost:8081
-    description: Backend Go
 
 tags:
   - name: auth
@@ -49,7 +44,7 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-              description: Cookie de sesión (JSESSIONID o session_id).
+              description: Cookie de sesión JSESSIONID.
           content:
             application/json:
               schema:

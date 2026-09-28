@@ -1,10 +1,7 @@
 # Java / Maven
 backend-java/target/
 
-# Go
-backend-go/portal-go
-
-# Node (frontends, cuando se integren)
+# Node
 node_modules/
 dist/
 
@@ -12,4 +9,7 @@ dist/
 .idea/
 *.iml
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/mcp.json
 .DS_Store

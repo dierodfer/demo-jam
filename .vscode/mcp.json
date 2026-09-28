@@ -1,0 +1,29 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "github-project-token",
+      "description": "Fine-grained PAT for dierodfer/demo-jam2 only (Metadata read, Contents read, Issues read/write, Pull requests read/write)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "githubProject": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${input:github-project-token}",
+        "X-MCP-Toolsets": "repos,issues,pull_requests"
+      }
+    },
+    "playwrightProject": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--isolated"
+      ]
+    }
+  }
+}

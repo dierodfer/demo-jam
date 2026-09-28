@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Java, React y contrato API
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SERVER_PORT: "8080"
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_NAME: portal
+      DB_USER: portal
+      DB_PASSWORD: portal
+      MIGRATIONS_PATH: ../shared/migrations
+      CORS_ALLOWED_ORIGIN: http://localhost:5173
+      SEED_USERNAME: admin
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: portal
+          POSTGRES_USER: portal
+          POSTGRES_PASSWORD: portal
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U portal -d portal"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v7
+
+      - name: Configurar Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend-react/package-lock.json
+
+      - name: Probar backend Java
+        run: make test-java
+
+      - name: Instalar dependencias React
+        run: make install-react-ci
+
+      - name: Construir frontend React
+        run: make build-react
+
+      - name: Validar configuración Docker Compose
+        run: docker compose -f docker-compose.yml -f docker-compose.java-react.yml config --quiet
+
+      - name: Arrancar backend Java
+        run: nohup make run-java >/tmp/portal-backend.log 2>&1 </dev/null &
+
+      - name: Esperar a que termine la siembra de demo
+        run: |
+          for attempt in $(seq 1 60); do
+            status=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -H 'Content-Type: application/json' \
+              -d '{"username":"admin","password":"ci"}' \
+              http://localhost:8080/api/login 2>/dev/null || true)
+            if [ "$status" = "200" ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/portal-backend.log
+          exit 1
+
+      - name: Ejecutar tests de contrato
+        run: make verify

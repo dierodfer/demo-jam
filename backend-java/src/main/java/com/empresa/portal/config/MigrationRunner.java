@@ -18,10 +18,8 @@ import java.util.stream.Stream;
 
 /**
  * Aplica en orden los ficheros .sql de shared/migrations que aún no consten en
- * la tabla schema_migration. Es el MISMO mecanismo que usa el backend Go: el
- * primero que arranca aplica la migración, el otro la ve ya registrada. Las
- * migraciones aplicadas nunca se editan. Corre con @Order(1), antes del
- * DataSeeder (@Order(2)).
+ * la tabla schema_migration. Las migraciones aplicadas nunca se editan. Corre
+ * con @Order(1), antes del DataSeeder (@Order(2)).
  */
 @Component
 @Order(1)

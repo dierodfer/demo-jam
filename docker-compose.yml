@@ -1,14 +1,10 @@
-# Servicio de base de datos COMPARTIDO por los dos stacks.
+# Servicio PostgreSQL del portal.
 #
-# No se levanta solo: docker-compose.java-react.yml y docker-compose.go-vue.yml
-# lo incluyen con `-f docker-compose.yml -f docker-compose.<stack>.yml` (ver
-# Makefile). Al ejecutarse desde el mismo directorio, ambos comandos caen en el
-# mismo "proyecto" de Compose, así que si levantas los dos stacks el segundo
-# reconoce el postgres ya levantado por el primero en vez de duplicarlo.
+# Se incluye desde docker-compose.java-react.yml o se levanta solo con
+# `make db-up` para el desarrollo local.
 #
-# Para desarrollo local sin Docker (make run-java / run-go / dev), `make db-up`
-# levanta solo este servicio y los backends nativos se conectan a
-# localhost:5432.
+# Para desarrollo local, `make db-up` levanta este servicio y el backend Java
+# se conecta a localhost:5432.
 
 services:
   postgres:
