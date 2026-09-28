@@ -9,4 +9,7 @@ dist/
 .idea/
 *.iml
 .vscode/
+!.vscode/
+.vscode/*
+!.vscode/mcp.json
 .DS_Store

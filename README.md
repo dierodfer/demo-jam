@@ -183,8 +183,25 @@ Las reglas de implementación y verificación para agentes están en
 [`AGENTS.md`](AGENTS.md). La guía también se aplica a Claude Code mediante
 [`CLAUDE.md`](CLAUDE.md).
 
+## MCP del proyecto (VS Code)
+
+La configuración compartida del workspace está en
+[`.vscode/mcp.json`](.vscode/mcp.json): registra el servidor remoto de GitHub y
+Playwright MCP. VS Code solicitará un fine-grained PAT para
+`dierodfer/demo-jam2`; el archivo solo contiene la referencia de entrada, no el
+token. Limita ese PAT a este repositorio y concede únicamente los permisos
+necesarios: Metadata de lectura, Contents de lectura, Issues de lectura y
+escritura, y Pull requests de lectura y escritura. VS Code guarda el valor de
+entrada de forma segura en el perfil local.
+
+Playwright se ejecuta con `npx` al iniciar el servidor MCP y usa un contexto de
+navegador aislado. Requiere Node.js 20 o posterior y conexión a Internet para
+descargar el paquete la primera vez.
+
 ## Fuera de alcance
 
-- **GitHub**: se gestiona aparte.
-- **Playwright / tests e2e**: descartados.
+- **Integración de producto con GitHub**: fuera de alcance; el MCP solo ofrece
+  herramientas de desarrollo.
+- **Tests e2e de Playwright**: no están implementados; el servidor MCP queda
+  disponible para exploración y pruebas manuales con navegador.
 - **Kubernetes**: no aplica; son contenedores de Docker Compose.
