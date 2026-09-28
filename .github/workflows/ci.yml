@@ -18,7 +18,7 @@ concurrency:
 jobs:
   build-and-test:
     name: Java, React y contrato API
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       SERVER_PORT: "8080"
