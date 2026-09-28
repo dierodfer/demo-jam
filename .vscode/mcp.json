@@ -3,7 +3,7 @@
     {
       "type": "promptString",
       "id": "github-project-token",
-      "description": "Fine-grained PAT for dierodfer/demo-jam2 only (Metadata read, Contents read, Issues read/write, Pull requests read/write)",
+      "description": "Fine-grained PAT for dierodfer/demo-jam only (Metadata read, Contents read, Issues read/write, Pull requests read/write)",
       "password": true
     }
   ],

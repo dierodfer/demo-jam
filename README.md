@@ -197,7 +197,7 @@ Las reglas de implementación y verificación para agentes están en
 La configuración compartida del workspace está en
 [`.vscode/mcp.json`](.vscode/mcp.json): registra el servidor remoto de GitHub y
 Playwright MCP. VS Code solicitará un fine-grained PAT para
-`dierodfer/demo-jam2`; el archivo solo contiene la referencia de entrada, no el
+`dierodfer/demo-jam`; el archivo solo contiene la referencia de entrada, no el
 token. Limita ese PAT a este repositorio y concede únicamente los permisos
 necesarios: Metadata de lectura, Contents de lectura, Issues de lectura y
 escritura, y Pull requests de lectura y escritura. VS Code guarda el valor de
