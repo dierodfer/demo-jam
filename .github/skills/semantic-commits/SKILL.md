@@ -9,6 +9,10 @@ Usa `tipo(modulo): descripcion breve`. Escribe tipo y modulo en minusculas; el
 modulo identifica el area afectada, como `api`, `backend-java`,
 `frontend-react`, `shared` o `docs`.
 
+Usa siempre el MCP de GitHub para consultar y gestionar este repositorio,
+issues y pull requests; recurre a `gh` o al navegador solo si el MCP no ofrece
+la operacion necesaria.
+
 Tipos habituales: `feat` (funcionalidad), `fix` (correccion), `docs`,
 `refactor`, `perf`, `style`, `test`, `build`, `ci`, `chore` y `revert`.
 
