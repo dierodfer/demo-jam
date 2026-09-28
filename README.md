@@ -46,92 +46,33 @@ son **builds estáticos servidos por nginx** (en esos mismos puertos); el
 navegador llama a la API directamente al puerto publicado del backend — nginx
 solo sirve ficheros, no hace de proxy.
 
-### Stack Java + React (`docker-compose.java-react.yml`)
+Los dos stacks se pueden levantar por separado o a la vez. Ambos incluyen el
+mismo servicio Postgres y comparten el contrato OpenAPI y las migraciones.
+React apunta por defecto al backend Java; Vue, al backend Go.
 
 ```mermaid
 flowchart LR
-    navegador(["🧑‍💻 Navegador"])
+    navegador(["Navegador"])
+    react["React · :5173"]
+    java["Backend Java · :8080"]
+    vue["Vue · :5174"]
+    go["Backend Go · :8081"]
+    contrato["shared/openapi.yaml"]
+    migraciones["shared/migrations"]
+    db[("PostgreSQL · :5432")]
 
-    subgraph stack_java["Stack Java + React"]
-        react["frontend-react<br/>nginx · build estático<br/>:5173"]
-        java["backend-java<br/>Spring Boot 4.1 · JPA<br/>:8080"]
-    end
-
-    db[("postgres<br/>PostgreSQL 16<br/>:5432")]
-    migraciones["shared/migrations/*.sql"]
-
-    navegador -->|"HTTP :5173"| react
-    navegador -->|"fetch /api/* · cookie JSESSIONID<br/>CORS :5173"| java
-    java -->|"SQL"| db
-    migraciones -.->|"se aplican al arrancar"| java
-```
-
-### Stack Go + Vue (`docker-compose.go-vue.yml`)
-
-```mermaid
-flowchart LR
-    navegador(["🧑‍💻 Navegador"])
-
-    subgraph stack_go["Stack Go + Vue"]
-        vue["frontend-vue<br/>nginx · build estático<br/>:5174"]
-        go["backend-go<br/>Go · net/http · pgx<br/>:8081"]
-    end
-
-    db[("postgres<br/>PostgreSQL 16<br/>:5432")]
-    migraciones["shared/migrations/*.sql"]
-
-    navegador -->|"HTTP :5174"| vue
-    navegador -->|"fetch /api/* · cookie session_id<br/>CORS :5174"| go
-    go -->|"SQL"| db
-    migraciones -.->|"se aplican al arrancar"| go
-```
-
-### Conjunto: los dos stacks a la vez
-
-Los dos composes incluyen el mismo `docker-compose.yml` base, así que el
-servicio `postgres` es **uno solo**: el primer stack que se levanta lo arranca
-y el segundo lo reutiliza. Además comparten las fuentes de verdad: el contrato
-OpenAPI (misma API en ambos backends) y las migraciones (mismo esquema). Por
-eso cualquier frontend puede hablar con cualquier backend, y un cambio hecho
-desde React/Java se ve al instante en Vue/Go.
-
-```mermaid
-flowchart TB
-    navegador(["🧑‍💻 Navegador"])
-
-    subgraph stack_java["Stack Java + React"]
-        react["frontend-react<br/>nginx estático :5173"]
-        java["backend-java<br/>:8080"]
-    end
-
-    subgraph stack_go["Stack Go + Vue"]
-        vue["frontend-vue<br/>nginx estático :5174"]
-        go["backend-go<br/>:8081"]
-    end
-
-    subgraph compartido["shared/ — fuentes de verdad"]
-        contrato["openapi.yaml<br/>(contrato de API)"]
-        migraciones["migrations/*.sql<br/>(esquema BBDD)"]
-    end
-
-    db[("postgres · PostgreSQL 16 · :5432<br/>BBDD portal · volumen portal-db-data<br/>(el MISMO servicio para ambos stacks)")]
-
-    navegador --> react
-    navegador --> vue
-    react -->|"/api/*"| java
-    vue -->|"/api/*"| go
-    java -->|"SQL"| db
-    go -->|"SQL"| db
-    contrato -.->|"implementan idéntico"| java
-    contrato -.-> go
-    migraciones -.->|"aplican al arrancar<br/>(schema_migration)"| java
-    migraciones -.-> go
+    navegador --> react --> java --> db
+    navegador --> vue --> go --> db
+    contrato -.->|"mismo contrato"| java
+    contrato -.->|"mismo contrato"| go
+    migraciones -.->|"esquema común"| java
+    migraciones -.->|"esquema común"| go
 ```
 
 ## Contrato de API
 
-Un único [`shared/openapi.yaml`](shared/openapi.yaml) define las cuatro rutas
-que **ambos backends implementan de forma idéntica** (mismo JSON):
+Un único [`shared/openapi.yaml`](shared/openapi.yaml) define el contrato que
+**ambos backends implementan de forma idéntica** (mismas rutas y formas JSON):
 
 | Método | Ruta          | Descripción                              |
 |--------|---------------|------------------------------------------|
@@ -286,12 +227,11 @@ componentes (JSX vs SFC). Pantallas:
 Detalles en [`frontend-react/README.md`](frontend-react/README.md) y
 [`frontend-vue/README.md`](frontend-vue/README.md).
 
-## Para agentes de IA
+## Instrucciones para agentes
 
-Este repo está pensado como base sobre la que generar nuevas características
-con IA. La receta completa (contrato → migración → backends → frontends), las
-convenciones de paridad y cómo verificar están en [`AGENTS.md`](AGENTS.md)
-(`CLAUDE.md` lo importa para Claude Code).
+Las reglas de implementación, paridad entre stacks y verificación para agentes
+están en [`AGENTS.md`](AGENTS.md). La guía también se aplica a Claude Code
+mediante [`CLAUDE.md`](CLAUDE.md).
 
 ## Fuera de alcance
 

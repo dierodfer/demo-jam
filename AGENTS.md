@@ -1,125 +1,112 @@
-# Guía para agentes de IA — Portal de Empleado
+# Instrucciones para agentes
 
-Este repo es una demo: un portal de empleado implementado **por duplicado** en
-4 stacks para comparar cómo la IA genera la misma característica en cada uno.
-Tu trabajo casi siempre será **añadir una característica nueva manteniendo la
-paridad entre las 4 implementaciones**. Esta guía es la receta.
+Aplica estas reglas al implementar y verificar cambios. Para conocer el
+producto y cómo ponerlo en marcha, consulta [`README.md`](README.md).
 
-## Arquitectura en 30 segundos
+## Contexto
 
-| Componente | Stack | Puerto | Habla con |
-|---|---|---|---|
-| `backend-java/` | Spring Boot 4.1 (Java 25), JPA, driver PostgreSQL | 8080 | Postgres `:5432` |
-| `backend-go/` | Go, `net/http`, `pgx` | 8081 | Postgres `:5432` (la misma BBDD) |
-| `frontend-react/` | React 19 + Vite | 5173 | backend Java por defecto |
-| `frontend-vue/` | Vue 3 + Vite | 5174 | backend Go por defecto |
-| `postgres` | PostgreSQL 16 (contenedor, `docker-compose.yml`) | 5432 | volumen `portal-db-data` |
+Implementa las funcionalidades con paridad en los backends Java y Go y los
+frontends React y Vue. No hay código compartido entre los backends; sus fuentes
+de verdad comunes son:
 
-La BBDD es **un único servicio Postgres compartido** definido en
-`docker-compose.yml`; los dos stacks lo incluyen, así que levantar cualquiera
-de ellos (o `make db-up` para desarrollo local) lo arranca. Los cuatro
-servicios publican siempre su puerto en el host — en Docker los frontends los
-sirve nginx como build estático, en los mismos puertos 5173/5174.
+- `shared/openapi.yaml`: contrato que ambos backends deben implementar con las
+  mismas rutas y formas JSON.
+- `shared/migrations/*.sql`: esquema que ambos backends aplican al arrancar.
+  La tabla `schema_migration` registra las migraciones aplicadas. No crees
+  esquema desde el código: Hibernate usa `ddl-auto=none` y Go no tiene DDL
+  propio.
 
-Fuentes de verdad **compartidas** (no hay código compartido entre backends,
-solo estos ficheros):
+El login es simulado: el usuario por defecto es `admin` (`SEED_USERNAME`) y
+cualquier contraseña es válida. Java usa la cookie `JSESSIONID` y Go usa
+`session_id`; incluye `credentials: 'include'` en las peticiones del frontend.
 
-- `shared/openapi.yaml` — el contrato de API. Ambos backends lo implementan
-  idéntico (mismas rutas, mismo JSON).
-- `shared/migrations/*.sql` — el esquema de la BBDD. Ambos backends aplican
-  estas migraciones al arrancar (tabla `schema_migration` registra cuáles ya
-  corrieron). **Ningún backend crea esquema por su cuenta**: Hibernate está en
-  `ddl-auto=none` y el Go no tiene DDL propio.
+## Paridad
 
-Login simulado: username `admin` (env `SEED_USERNAME`), **cualquier**
-contraseña. Sesión por cookie (`JSESSIONID` en Java, `session_id` en Go);
-el frontend siempre llama con `credentials: 'include'`.
+Completa cada funcionalidad en los cinco sitios: contrato, backend Java,
+backend Go, frontend React y frontend Vue. Si la solicitud limita el alcance,
+indica explícitamente qué partes quedan pendientes.
 
-## La regla de oro: paridad
+## Implementación
 
-Una característica no está terminada hasta que existe en **los 5 sitios**:
-contrato, backend Java, backend Go, frontend React, frontend Vue. Si te piden
-solo una parte, deja constancia explícita de qué quedó pendiente.
+Sigue este orden:
 
-### Receta para añadir una característica (en este orden)
+1. **Contrato:** actualiza rutas y esquemas en `shared/openapi.yaml`.
+2. **Base de datos:** si hacen falta tablas o columnas, añade
+   `shared/migrations/NNN_descripcion.sql` con el siguiente número disponible
+   y sintaxis PostgreSQL. Usa `GENERATED ALWAYS AS IDENTITY` para los ids.
+   Nunca edites una migración ya aplicada. No incluyas `;` dentro de literales
+   SQL: los runners separan las sentencias por ese carácter.
+3. **Java:** declara `@Table` y `@Column` explícitamente, con nombres
+   `snake_case` iguales a los de la migración. Añade repositorios, DTOs
+   `record` con JSON `camelCase` y controladores que obtengan `empleadoId` de
+   la sesión. No expongas `username` ni `empleado_id`. Usa
+   `CertificacionController` como referencia y siembra datos demo en
+   `DataSeeder` cuando corresponda.
+4. **Go:** usa tags JSON idénticos a los DTOs Java. Registra handlers con
+   `mux.HandleFunc("GET /api/...", ...)` y aplica el mismo alcance por sesión.
+   Mantén en `seed()` los mismos datos demo que en Java. Usa placeholders
+   PostgreSQL (`$1`, `$2`, ...) y `RETURNING id` para recuperar ids generados;
+   PostgreSQL no admite `LastInsertId()`.
+5. **React y Vue:** para cada sección nueva, añade la misma id y etiqueta a
+   `SECCIONES` en `frontend-react/src/App.jsx` y
+   `frontend-vue/src/App.vue`. Implementa el componente, las funciones de API
+   y los estilos en ambos frameworks.
 
-1. **Contrato** — añade rutas y esquemas a `shared/openapi.yaml`.
-2. **Esquema** — si hay tablas/columnas nuevas, crea `shared/migrations/NNN_descripcion.sql`
-   con el siguiente número libre, en **sintaxis PostgreSQL** (ids con
-   `GENERATED ALWAYS AS IDENTITY`). **Nunca edites una migración ya aplicada**;
-   los cambios van en una migración nueva. SQL simple, sin `;` dentro de
-   literales (los runners parten por `;`).
-3. **Backend Java** — entidad con `@Table`/`@Column` explícitos (tabla y
-   columnas en `snake_case`, igual que la migración), repositorio, DTOs
-   `record` (JSON en `camelCase`, sin exponer `username` ni `empleado_id`),
-   controlador que lee `empleadoId` de la sesión (ver `CertificacionController`
-   como plantilla). Siembra de datos demo en `DataSeeder` si aplica.
-4. **Backend Go** — struct con tags JSON idénticos al DTO de Java, handlers
-   registrados como `mux.HandleFunc("GET /api/...", ...)`, mismo scoping por
-   sesión, misma siembra en `seed()` (ver los handlers de certificaciones como
-   plantilla). Los datos sembrados deben ser **idénticos** a los del Java.
-   SQL con placeholders de Postgres (`$1, $2, ...`) y `RETURNING id` para
-   recuperar ids generados (`LastInsertId()` no existe en Postgres).
-5. **Frontends** — para una sección nueva del portal: añade la entrada en
-   `SECCIONES` de `frontend-react/src/App.jsx` **y** `frontend-vue/src/App.vue`
-   (misma id y label), crea el componente en cada framework, añade las
-   funciones de API y los estilos (ver "Ficheros espejo").
+## Archivos sincronizados
 
-### Ficheros espejo (deben ser IDÉNTICOS byte a byte)
+React y Vue no comparten componentes, pero sí estilos y lógica pura. Mantén
+estos archivos idénticos:
 
-React y Vue no comparten componentes, pero sí estilos y lógica pura:
+- `frontend-react/src/styles.css` y `frontend-vue/src/styles.css`
+- `frontend-react/src/lib/vacaciones.js` y
+  `frontend-vue/src/lib/vacaciones.js`
 
-- `frontend-react/src/styles.css` ↔ `frontend-vue/src/styles.css`
-- `frontend-react/src/lib/vacaciones.js` ↔ `frontend-vue/src/lib/vacaciones.js`
-- `frontend-react/src/lib/api.js` ↔ `frontend-vue/src/lib/api.js`
-  (única diferencia permitida: la URL por defecto — 8080 en React, 8081 en Vue)
+Mantén también sincronizados `frontend-react/src/lib/api.js` y
+`frontend-vue/src/lib/api.js`. La única diferencia permitida es la URL por
+defecto: puerto 8080 en React y 8081 en Vue. Aplica los cambios correspondientes
+en ambos frontends en el mismo commit.
 
-Si tocas uno, replica el cambio en el otro en el mismo commit.
+## Reglas
 
-## Convenciones
+- Escribe en español la UI, los comentarios, los commits y la documentación.
+- Usa claves JSON `camelCase` (por ejemplo, `empresaEmisora`), columnas SQL
+  `snake_case` (por ejemplo, `empresa_emisora`) y fechas `YYYY-MM-DD`.
+- Devuelve errores con `{"error": "mensaje"}`. Usa `401` si falta la sesión y
+  `404` si el recurso no existe o no pertenece al empleado de la sesión.
+- No añadas Spring Security ni nuevas librerías salvo que exista una necesidad
+  real.
+- No implementes subida ni adjuntos de archivos.
+- Muestra `NoDisponible` en las secciones aún no implementadas.
+- Lee la configuración de las variables de entorno existentes. Los backends
+  usan `SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`,
+  `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN` y `SEED_USERNAME`; los frontends usan
+  `VITE_API_BASE`. En Docker, `VITE_API_BASE` es un `build-arg` incluido en el
+  build estático.
 
-- **Idioma**: UI, comentarios, commits y esta documentación en español.
-- **JSON**: claves en `camelCase` (`empresaEmisora`). **Columnas**: `snake_case`
-  (`empresa_emisora`). **Fechas**: string `YYYY-MM-DD`.
-- **Errores**: cuerpo `{"error": "mensaje"}`; `401` sin sesión, `404` si el
-  recurso no existe o no pertenece al empleado de la sesión.
-- **Sin Spring Security**, sin librerías nuevas salvo necesidad real.
-- **Sin subida/adjuntos de archivos** — decisión de producto de la demo.
-- Secciones del portal sin implementar muestran el componente `NoDisponible`.
-- Config por variables de entorno con defaults para desarrollo local:
-  `SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`,
-  `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN`, `SEED_USERNAME` (backends);
-  `VITE_API_BASE` (frontends — en Docker es un **build-arg**: se hornea en el
-  build estático que sirve nginx).
-- Los dos backends comparten el mismo Postgres (BBDD `portal`, usuario/clave
-  `portal` por defecto). Para desarrollo local sin Docker de backends:
-  `make db-up` levanta solo el Postgres.
+## Verificación
 
-## Cómo verificar tu trabajo
+Ejecuta las comprobaciones pertinentes al cambio:
 
 ```bash
-# Compilar todo
 make install
-
-# BBDD para desarrollo local (los backends la necesitan para arrancar)
 make db-up
-
-# Tests de contrato (arranca antes el/los backend(s): make run-java / run-go)
-make verify-java     # batería contra el Java (8080)
-make verify-go       # batería contra el Go (8081)
-make verify          # ambos + comparación de paridad de respuestas
+make verify-java
+make verify-go
+make verify
 ```
 
-`scripts/contract-test.mjs` ejecuta la misma batería contra cada backend y,
-con los dos en marcha, comprueba que respondan con el mismo status y la misma
-forma de JSON. **Amplíalo cuando añadas endpoints** — es la red de seguridad
-que detecta cuándo los backends divergen. El test limpia lo que crea.
+`make db-up` inicia PostgreSQL para el desarrollo local. Arranca el backend que
+vayas a probar con `make run-java` o `make run-go` antes de ejecutar sus tests
+de contrato. `make verify` ejecuta ambos y compara la paridad de las respuestas.
 
-Para los frontends: `npm run build` en cada uno debe compilar sin errores, y
-la prueba manual es login → sección nueva → operaciones CRUD → los datos
-persisten tras recargar.
+Amplía `scripts/contract-test.mjs` al añadir endpoints. El test comprueba los
+códigos y formas JSON y limpia los datos que crea.
 
-## Mapa del repo
+Ejecuta `npm run build` en cada frontend afectado. Para una funcionalidad de
+punta a punta, comprueba manualmente el login, la nueva sección, sus operaciones
+CRUD y la persistencia tras recargar.
+
+## Mapa
 
 ```
 shared/openapi.yaml           Contrato de API (fuente de verdad nº 1)
