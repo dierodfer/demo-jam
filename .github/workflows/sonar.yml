@@ -1,0 +1,45 @@
+name: Sonar
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: sonar-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Análisis SonarCloud
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Compilar backend Java
+        run: cd backend-java && mvn -B compile
+
+      - name: Analizar con SonarCloud
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
