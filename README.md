@@ -1,4 +1,4 @@
-# Portal de Empleado
+# Employee Portal
 
 [![CI Backend](https://github.com/dierodfer/demo-jam/actions/workflows/ci-backend.yml/badge.svg)](https://github.com/dierodfer/demo-jam/actions/workflows/ci-backend.yml)
 [![CI Frontend](https://github.com/dierodfer/demo-jam/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/dierodfer/demo-jam/actions/workflows/ci-frontend.yml)
@@ -6,106 +6,116 @@
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=dierodfer_demo-jam&metric=bugs)](https://sonarcloud.io/project/issues?id=dierodfer_demo-jam)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=dierodfer_demo-jam&metric=vulnerabilities)](https://sonarcloud.io/project/issues?id=dierodfer_demo-jam)
 
-Portal de empleado con **login simulado**, perfil editable y gestión de
-certificaciones. Backend Java, frontend React y PostgreSQL, todo en local.
+![Java 25](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot 4.1](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite 8](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Node 22](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs&logoColor=white)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![OpenAPI 3](https://img.shields.io/badge/OpenAPI-3-6BA539?logo=openapiinitiative&logoColor=white)
 
-## Estructura
+Employee portal with a **simulated login**, an editable profile and
+certification management. Java backend, React frontend and PostgreSQL, all
+running locally.
+
+## Structure
 
 ```
 backend-java/                   Backend (8080)
 frontend-react/                 Frontend (5173)
-shared/openapi.yaml             Contrato de la API
-shared/migrations/              Migraciones SQL del esquema
-scripts/contract-test.mjs       Tests de contrato
-docker-compose*.yml             PostgreSQL y stack completo
-Makefile                        Punto de entrada de todos los comandos
-AGENTS.md / CLAUDE.md           Guía para agentes de IA
+shared/openapi.yaml             API contract
+shared/migrations/              SQL schema migrations
+scripts/contract-test.mjs       Contract tests
+docker-compose*.yml             PostgreSQL and full stack
+Makefile                        Entry point for every command
+AGENTS.md / CLAUDE.md           Guide for AI agents
 ```
 
 ```mermaid
 flowchart LR
-    navegador(["Navegador"]) --> react["React · :5173"] --> java["Backend Java · :8080"] --> db[("PostgreSQL · :5432")]
-    contrato["openapi.yaml"] -.-> java
-    migraciones["migrations"] -.-> java
+    browser(["Browser"]) --> react["React · :5173"] --> java["Java backend · :8080"] --> db[("PostgreSQL · :5432")]
+    contract["openapi.yaml"] -.-> java
+    migrations["migrations"] -.-> java
 ```
 
-## Puesta en marcha
+## Getting started
 
-Requisitos: Java 25 con Maven, Node 22 y Docker. Todo se lanza con `make`
-(`make help` lista los comandos).
+Requirements: Java 25 with Maven, Node 22 and Docker. Everything runs through
+`make` (`make help` lists the commands).
 
 ```bash
 make db-up            # PostgreSQL
-make dev              # backend + frontend con hot-reload
-make up-java-react    # stack completo en Docker (down-java-react para parar)
-make verify           # tests de contrato (con el backend arrancado)
+make dev              # backend + frontend with hot reload
+make up-java-react    # full stack in Docker (down-java-react to stop)
+make verify           # contract tests (backend must be running)
 ```
 
-El frontend usa `VITE_API_BASE` (por defecto `http://localhost:8080`); en Docker
-se fija como *build-arg* en el build estático.
+The frontend reads `VITE_API_BASE` (default `http://localhost:8080`); in Docker
+it is set as a build arg in the static build.
 
 ## API
 
-El contrato completo está en [`shared/openapi.yaml`](shared/openapi.yaml).
+The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
 
-| Método | Ruta | Descripción |
+| Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/login` | Abre sesión (cookie `JSESSIONID`) |
-| POST | `/api/logout` | Cierra la sesión |
-| GET / PUT | `/api/me` | Consulta / actualiza el perfil |
-| GET / POST | `/api/certificaciones` | Lista / crea certificaciones |
-| PUT / DELETE | `/api/certificaciones/{id}` | Actualiza / elimina una certificación |
+| POST | `/api/login` | Opens a session (`JSESSIONID` cookie) |
+| POST | `/api/logout` | Closes the session |
+| GET / PUT | `/api/me` | Reads / updates the profile |
+| GET / POST | `/api/certificaciones` | Lists / creates certifications |
+| PUT / DELETE | `/api/certificaciones/{id}` | Updates / deletes a certification |
 
-- Login simulado: el usuario es `admin` (`SEED_USERNAME`) y cualquier contraseña
-  es válida. Sin sesión, la API responde `401`.
-- El frontend hace las peticiones con `credentials: 'include'`.
+- Simulated login: the user is `admin` (`SEED_USERNAME`) and any password is
+  accepted. Without a session, the API returns `401`.
+- The frontend sends requests with `credentials: 'include'`.
 
 ```bash
 curl -c cookies.txt -X POST http://localhost:8080/api/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"lo-que-sea"}'
+  -d '{"username":"admin","password":"anything"}'
 curl -b cookies.txt http://localhost:8080/api/me
 ```
 
-## Base de datos
+## Database
 
-El esquema se define solo mediante las migraciones de
-[`shared/migrations/`](shared/migrations), que el backend aplica al arrancar
-(tabla `schema_migration`). Para cambiarlo, añade una migración nueva; nunca
-edites una ya aplicada. Los datos demo los siembra el backend. En Docker los
-datos persisten en el volumen `portal-db-data`.
+The schema is defined only by the migrations in
+[`shared/migrations/`](shared/migrations), which the backend applies on startup
+(`schema_migration` table). To change it, add a new migration; never edit one
+that was already applied. Demo data is seeded by the backend. In Docker, data
+persists in the `portal-db-data` volume.
 
-## Configuración
+## Configuration
 
-El backend lee `SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
-`DB_PASSWORD`, `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN` y `SEED_USERNAME`.
+The backend reads `SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
+`DB_PASSWORD`, `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN` and `SEED_USERNAME`.
 
 ## Frontend
 
-- **Login** y **Datos del empleado**: perfil editable.
-- **Vacaciones**: calendario anual con datos estáticos de demo.
-- **Conocimientos / Certificaciones**: CRUD con búsqueda, orden y paginación.
-- **Resto de secciones**: aviso de «Sección no disponible».
+- **Login** and **Employee data**: editable profile.
+- **Vacations**: yearly calendar with static demo data.
+- **Skills / Certifications**: CRUD with search, sorting and pagination.
+- **Other sections**: "Section not available" notice.
 
-## Integración continua
+## Continuous integration
 
-Dos workflows independientes, cada uno solo se activa si cambian sus archivos:
+Two independent workflows, each triggered only when its own files change:
 
 - [`ci-backend.yml`](.github/workflows/ci-backend.yml) (`backend-java/**`):
-  tests Java y tests de contrato contra PostgreSQL.
+  Java tests and contract tests against PostgreSQL.
 - [`ci-frontend.yml`](.github/workflows/ci-frontend.yml) (`frontend-react/**`):
-  instalación y build de React.
+  React install and build.
 
-SonarCloud analiza cada push a `main` y cada pull request.
+SonarCloud analyzes every push to `main` and every pull request.
 
-## Agentes de IA
+## AI agents
 
-Las reglas de implementación y verificación están en [`AGENTS.md`](AGENTS.md),
-que también aplica a Claude Code mediante [`CLAUDE.md`](CLAUDE.md). La
-configuración MCP del workspace (GitHub y Playwright) está en
-[`.vscode/mcp.json`](.vscode/mcp.json); VS Code pide un PAT limitado a este
-repositorio y no lo guarda en el archivo.
+Implementation and verification rules are in [`AGENTS.md`](AGENTS.md), which
+also applies to Claude Code through [`CLAUDE.md`](CLAUDE.md). The workspace MCP
+configuration (GitHub and Playwright) is in
+[`.vscode/mcp.json`](.vscode/mcp.json); VS Code asks for a PAT scoped to this
+repository and does not store it in the file.
 
-## Fuera de alcance
+## Out of scope
 
-Subida de archivos, tests e2e de Playwright y Kubernetes.
+File uploads, Playwright e2e tests and Kubernetes.
