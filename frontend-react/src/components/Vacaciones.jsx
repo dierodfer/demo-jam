@@ -4,7 +4,7 @@ import {
 } from '../lib/vacaciones.js';
 
 function Mes({ year, monthIndex, hoy }) {
-  const cells = buildMonth(year, monthIndex);
+  const { offset, days } = buildMonth(year, monthIndex);
   return (
     <div className="cal-mes">
       <div className="cal-mes-nombre">{MESES[monthIndex]}</div>
@@ -12,8 +12,7 @@ function Mes({ year, monthIndex, hoy }) {
         {DIAS_SEMANA.map((d) => (
           <div className="cal-cab" key={d}>{d}</div>
         ))}
-        {cells.map((day, i) => {
-          if (day === null) return <div key={`v-${i}`} />;
+        {days.map((day) => {
           const key = dateKey(year, monthIndex, day);
           const f = dayFlags(key, year);
           const clases = ['cal-dia'];
@@ -21,8 +20,9 @@ function Mes({ year, monthIndex, hoy }) {
           if (f.used) clases.push('usado');
           if (f.selected) clases.push('marcado');
           if (key === hoy) clases.push('hoy');
+          const style = day === 1 && offset > 0 ? { gridColumnStart: offset + 1 } : undefined;
           return (
-            <div className={clases.join(' ')} key={key}>{day}</div>
+            <div className={clases.join(' ')} style={style} key={key}>{day}</div>
           );
         })}
       </div>
@@ -54,8 +54,8 @@ export default function Vacaciones() {
       </div>
 
       <div className="vac-grid">
-        {MESES.map((_, m) => (
-          <Mes key={m} year={year} monthIndex={m} hoy={hoy} />
+        {MESES.map((nombre, m) => (
+          <Mes key={nombre} year={year} monthIndex={m} hoy={hoy} />
         ))}
       </div>
 

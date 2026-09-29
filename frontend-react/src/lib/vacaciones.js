@@ -5,15 +5,12 @@ export const MESES = [
 
 export const DIAS_SEMANA = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
-// Celdas de un mes empezando en lunes; null = hueco antes del día 1.
 export function buildMonth(year, monthIndex) {
   const first = new Date(year, monthIndex, 1);
   const offset = (first.getDay() + 6) % 7;
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const cells = [];
-  for (let i = 0; i < offset; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-  return cells;
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  return { offset, days };
 }
 
 export function dateKey(year, monthIndex, day) {

@@ -492,7 +492,17 @@ input { font: inherit; }
   animation: fadein 0.2s ease;
 }
 
+.modal-fondo {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .modal {
+  position: relative;
   background: #fff;
   border-radius: 10px;
   width: min(480px, 92vw);

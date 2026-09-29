@@ -1,13 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   listCertificaciones, createCertificacion, updateCertificacion, deleteCertificacion,
 } from '../lib/api.js';
+import Modal from './Modal.jsx';
 
 const COLUMNAS = [
   { id: 'conocimiento', label: 'Conocimiento / Certificación', sortable: true, izq: true },
   { id: 'empresaEmisora', label: 'Empresa emisora', sortable: true },
   { id: 'fecha', label: 'Fecha', sortable: true },
 ];
+
+function iconoOrden(activo, dir) {
+  if (!activo) return '⇅';
+  return dir === 'asc' ? '▲' : '▼';
+}
 
 const VACIA = { conocimiento: '', empresaEmisora: '', fecha: '' };
 
@@ -86,17 +92,17 @@ export default function Conocimientos() {
     <div>
       <div className="cert-top">
         <div className="cert-mostrar">
-          Mostrar
+          Mostrar{' '}
           <select
             value={pageSize}
             onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
           >
             {[10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
+          </select>{' '}
           registros
         </div>
         <label className="cert-buscar">
-          Buscar:
+          Buscar:{' '}
           <input
             value={buscar}
             onChange={(e) => { setBuscar(e.target.value); setPage(1); }}
@@ -118,7 +124,7 @@ export default function Conocimientos() {
                   {col.label}
                   {col.sortable && (
                     <span className={`cert-sort${activo ? ' activo' : ''}`}>
-                      {activo ? (sort.dir === 'asc' ? '▲' : '▼') : '⇅'}
+                      {iconoOrden(activo, sort.dir)}
                     </span>
                   )}
                 </th>
@@ -197,18 +203,16 @@ export default function Conocimientos() {
       )}
 
       {borrando && (
-        <div className="modal-overlay" onClick={() => setBorrando(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">Eliminar certificación</div>
-            <div className="modal-texto">
-              ¿Seguro que quieres eliminar «{borrando.conocimiento}»?
-            </div>
-            <div className="modal-foot">
-              <button className="btn" onClick={() => setBorrando(null)}>Cancelar</button>
-              <button className="btn btn-danger" onClick={confirmarBorrado}>Eliminar</button>
-            </div>
+        <Modal onClose={() => setBorrando(null)}>
+          <div className="modal-head">Eliminar certificación</div>
+          <div className="modal-texto">
+            ¿Seguro que quieres eliminar «{borrando.conocimiento}»?
           </div>
-        </div>
+          <div className="modal-foot">
+            <button className="btn" onClick={() => setBorrando(null)}>Cancelar</button>
+            <button className="btn btn-danger" onClick={confirmarBorrado}>Eliminar</button>
+          </div>
+        </Modal>
       )}
     </div>
   );
@@ -222,6 +226,9 @@ function FormularioModal({ inicial, onCancel, onSave }) {
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const primerCampo = useRef(null);
+
+  useEffect(() => { primerCampo.current?.focus(); }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -242,8 +249,8 @@ function FormularioModal({ inicial, onCancel, onSave }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+    <Modal onClose={onCancel}>
+      <form onSubmit={submit}>
         <div className="modal-head">{inicial.id ? 'Editar certificación' : 'Nueva certificación'}</div>
         <div className="modal-body">
           <div className="modal-campo">
@@ -252,7 +259,7 @@ function FormularioModal({ inicial, onCancel, onSave }) {
               id="m-conocimiento"
               value={form.conocimiento}
               onChange={(e) => set('conocimiento', e.target.value)}
-              autoFocus
+              ref={primerCampo}
             />
           </div>
           <div className="modal-campo">
@@ -279,6 +286,6 @@ function FormularioModal({ inicial, onCancel, onSave }) {
           <button type="submit" className="btn btn-primary" disabled={busy}>Guardar</button>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 }
