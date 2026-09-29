@@ -60,6 +60,13 @@ Sigue este orden:
   `VITE_API_BASE`. En Docker, `VITE_API_BASE` es un `build-arg` incluido en el
   build estático.
 
+## Ejecución
+
+El `Makefile` es el script central del proyecto: instala, compila, arranca,
+prueba y limpia. Usa siempre sus objetivos (`make help` los lista) en lugar de
+invocar `mvn`, `npm`, `node` o `docker compose` directamente. Si falta un
+atajo, añádelo al `Makefile` y documéntalo en `make help`.
+
 ## Verificación
 
 Ejecuta las comprobaciones pertinentes al cambio:
@@ -79,9 +86,8 @@ make verify
 Amplía `scripts/contract-test.mjs` al añadir endpoints. El test comprueba los
 códigos y formas JSON y limpia los datos que crea.
 
-Ejecuta `make build-react` en `frontend-react`. Para una funcionalidad de punta a
-punta, comprueba manualmente el login, la nueva sección, sus operaciones CRUD
-y la persistencia tras recargar.
+Para una funcionalidad de punta a punta, comprueba manualmente el login, la
+nueva sección, sus operaciones CRUD y la persistencia tras recargar.
 
 ## Mapa
 
@@ -96,5 +102,5 @@ frontend-react/src/           App.jsx (SECCIONES), components/, lib/, styles.css
 scripts/contract-test.mjs     Tests de contrato (make verify)
 docker-compose.yml            Servicio PostgreSQL
 docker-compose.java-react.yml Backend Java + frontend React
-Makefile                      make help lista todos los atajos
+Makefile                      Script central de ejecución (make help)
 ```
