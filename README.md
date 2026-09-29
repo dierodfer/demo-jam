@@ -1,216 +1,121 @@
-# Portal de Empleado (100% local)
+# Employee Portal
 
-Portal de empleado sencillo con **login simulado** y **perfil editable**,
-construido para funcionar por completo en local. La aplicación usa un backend
-Spring Boot, un frontend React y una base de datos PostgreSQL.
+[![CI Backend](https://github.com/dierodfer/demo-jam/actions/workflows/ci-backend.yml/badge.svg)](https://github.com/dierodfer/demo-jam/actions/workflows/ci-backend.yml)
+[![CI Frontend](https://github.com/dierodfer/demo-jam/actions/workflows/ci-frontend.yml/badge.svg)](https://github.com/dierodfer/demo-jam/actions/workflows/ci-frontend.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=dierodfer_demo-jam&metric=alert_status)](https://sonarcloud.io/project/overview?id=dierodfer_demo-jam)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=dierodfer_demo-jam&metric=bugs)](https://sonarcloud.io/project/issues?id=dierodfer_demo-jam)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=dierodfer_demo-jam&metric=vulnerabilities)](https://sonarcloud.io/project/issues?id=dierodfer_demo-jam)
 
-> **Estado actual**
->
-> | Componente | Estado |
-> |---|---|
-> | `shared/openapi.yaml` (contrato) | ✅ Listo |
-> | `backend-java` (Spring Boot 4.1.0 / Java 25) | ✅ Listo |
-> | `frontend-react` (React 19.2 + Vite 8) | ✅ Listo |
-> | `postgres` (PostgreSQL 16) | ✅ Listo |
-> | Docker Compose | ✅ Listo |
-> | `Makefile` | ✅ Listo |
+![Java 25](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot 4.1](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite 8](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Node 22](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs&logoColor=white)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![OpenAPI 3](https://img.shields.io/badge/OpenAPI-3-6BA539?logo=openapiinitiative&logoColor=white)
 
-## Estructura
+Employee portal with a **simulated login**, an editable profile and
+certification management. Java backend, React frontend and PostgreSQL, all
+running locally.
+
+## Structure
 
 ```
-.
-├── backend-java/                   Spring Boot 4.1.0 (Java 25) + Dockerfile   → 8080
-├── frontend-react/                 React 19.2 + Vite 8 (Docker: nginx)       → 5173
-├── shared/openapi.yaml             Contrato de la API
-├── shared/migrations/              Migraciones SQL del esquema
-├── scripts/contract-test.mjs       Tests de contrato (make verify)
-├── docker-compose.yml              Servicio PostgreSQL (5432)
-├── docker-compose.java-react.yml   Stack backend-java + frontend-react
-├── Makefile                        Atajos de instalación, dev, verify y docker
-└── AGENTS.md / CLAUDE.md           Guía para agentes de IA (receta de features)
+backend-java/                   Backend (8080)
+frontend-react/                 Frontend (5173)
+shared/openapi.yaml             API contract
+shared/migrations/              SQL schema migrations
+scripts/contract-test.mjs       Contract tests
+docker-compose*.yml             PostgreSQL and full stack
+Makefile                        Entry point for every command
+AGENTS.md / CLAUDE.md           Guide for AI agents
 ```
-
-## Arquitectura
-
-React publica `:5173`, Java `:8080` y PostgreSQL `:5432`. En Docker, el
-frontend se sirve como build estático con nginx. El navegador llama a la API
-directamente al puerto publicado del backend.
 
 ```mermaid
 flowchart LR
-    navegador(["Navegador"])
-    react["React · :5173"]
-    java["Backend Java · :8080"]
-    contrato["shared/openapi.yaml"]
-    migraciones["shared/migrations"]
-    db[("PostgreSQL · :5432")]
-
-    navegador --> react --> java --> db
-    contrato -.->|"mismo contrato"| java
-    migraciones -.->|"esquema común"| java
+    browser(["Browser"]) --> react["React · :5173"] --> java["Java backend · :8080"] --> db[("PostgreSQL · :5432")]
+    contract["openapi.yaml"] -.-> java
+    migrations["migrations"] -.-> java
 ```
 
-## Contrato de API
+## Getting started
 
-[`shared/openapi.yaml`](shared/openapi.yaml) define las rutas y formas JSON
-que implementa el backend Java:
-
-| Método | Ruta          | Descripción                              |
-|--------|---------------|------------------------------------------|
-| POST   | `/api/login`  | Login simulado. Abre sesión (cookie).    |
-| GET    | `/api/me`     | Perfil del empleado (401 si no hay sesión). |
-| PUT    | `/api/me`     | Actualiza el perfil.                     |
-| POST   | `/api/logout` | Cierra la sesión.                        |
-| GET    | `/api/certificaciones`      | Lista los conocimientos / certificaciones. |
-| POST   | `/api/certificaciones`      | Crea una certificación.        |
-| PUT    | `/api/certificaciones/{id}` | Actualiza una certificación.   |
-| DELETE | `/api/certificaciones/{id}` | Elimina una certificación.     |
-
-### Login simulado
-
-- El único empleado sembrado (`id=1`) tiene el username **`admin`**.
-- Se entra si el `username` coincide; **cualquier contraseña es válida**.
-- La sesión se mantiene con la cookie `JSESSIONID`.
-- El frontend debe hacer las peticiones con `credentials: 'include'`.
-
-### Perfil del empleado (7 campos)
-
-`nombre`, `email`, `telefono`, `puesto`, `departamento`, `direccion`, `foto`.
-
-## Base de datos
-
-Un servicio **PostgreSQL 16** en su propio contenedor (definido en
-[`docker-compose.yml`](docker-compose.yml)). El backend Java se conecta a la
-BBDD `portal` (usuario/clave `portal` por defecto, configurables con `DB_*`).
-Los datos persisten en el volumen Docker `portal-db-data`, no en el sistema de
-ficheros del repo.
-
-El esquema lo definen las migraciones de
-[`shared/migrations/`](shared/migrations): ficheros `NNN_descripcion.sql` en
-sintaxis PostgreSQL que el backend Java aplica al arrancar. La tabla
-`schema_migration` registra las migraciones ejecutadas. Hibernate está en
-`ddl-auto=none`; el esquema se crea exclusivamente mediante migraciones. Para
-cambiarlo, añade una migración nueva y nunca edites una ya aplicada. Los datos
-demo (empleado y certificaciones) se siembran desde el backend Java.
-
-## Puesta en marcha
-
-Requisitos: **Java 25 + Maven**, **Node 22+** y **Docker** (al menos para
-PostgreSQL). El `Makefile` lista los atajos disponibles con `make help`.
-
-### En local
+Requirements: Java 25 with Maven, Node 22 and Docker. Everything runs through
+`make` (`make help` lists the commands).
 
 ```bash
-make db-up        # levanta PostgreSQL (5432)
-
-make run-java     # backend Java en http://localhost:8080
-make run-react    # frontend React en http://localhost:5173
-# o ambos a la vez (incluye db-up):
-make dev
+make db-up            # PostgreSQL
+make dev              # backend + frontend with hot reload
+make up-java-react    # full stack in Docker (down-java-react to stop)
+make verify           # contract tests (backend must be running)
 ```
 
-### Con Docker
+The frontend reads `VITE_API_BASE` (default `http://localhost:8080`); in Docker
+it is set as a build arg in the static build.
 
-El stack incluye PostgreSQL, backend Java y frontend React:
+## API
+
+The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/login` | Opens a session (`JSESSIONID` cookie) |
+| POST | `/api/logout` | Closes the session |
+| GET / PUT | `/api/me` | Reads / updates the profile |
+| GET / POST | `/api/certificaciones` | Lists / creates certifications |
+| PUT / DELETE | `/api/certificaciones/{id}` | Updates / deletes a certification |
+
+- Simulated login: the user is `admin` (`SEED_USERNAME`) and any password is
+  accepted. Without a session, the API returns `401`.
+- The frontend sends requests with `credentials: 'include'`.
 
 ```bash
-make up-java-react     # PostgreSQL + backend Java + frontend React
-make down-java-react   # parar los servicios
-```
-
-En Docker React se sirve como **build estático con nginx** en el puerto 5173;
-en local `make run-react` usa el servidor de desarrollo Vite con hot-reload.
-`VITE_API_BASE` se pasa como *build-arg* y queda horneada en el build.
-
-### Probar la API
-
-```bash
-# Login (guarda la cookie de sesión)
 curl -c cookies.txt -X POST http://localhost:8080/api/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"lo-que-sea"}'
-
-# Perfil
+  -d '{"username":"admin","password":"anything"}'
 curl -b cookies.txt http://localhost:8080/api/me
-
-# Actualizar perfil
-curl -b cookies.txt -X PUT http://localhost:8080/api/me \
-  -H 'Content-Type: application/json' \
-  -d '{"puesto":"Tech Lead","telefono":"+34 611 000 999"}'
-
-# Logout
-curl -b cookies.txt -X POST http://localhost:8080/api/logout
 ```
 
-### Tests de contrato
+## Database
 
-Con el backend arrancado, `scripts/contract-test.mjs` comprueba login, perfil,
-CRUD de certificaciones y códigos de error; al terminar, restaura los datos
-que modifica:
+The schema is defined only by the migrations in
+[`shared/migrations/`](shared/migrations), which the backend applies on startup
+(`schema_migration` table). To change it, add a new migration; never edit one
+that was already applied. Demo data is seeded by the backend. In Docker, data
+persists in the `portal-db-data` volume.
 
-```bash
-make verify        # contra el backend Java (8080)
-```
+## Configuration
 
-## Integración continua
-
-El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) se ejecuta
-en cada push y en los pull requests con destino a `main`. Comprueba Java,
-instala y construye React, valida Docker Compose y ejecuta los tests de contrato
-contra Java con PostgreSQL. Localmente puedes ejecutar `make test-java`,
-`make install-react-ci`, `make build-react` y, con el backend arrancado,
-`make verify`.
-
-## Backend
-
-### `backend-java/` — Spring Boot 4.1.0 (Java 25)
-
-Dependencias: `web`, `data-jpa`, driver `postgresql` (sin Spring Security).
-CORS abierto a `http://localhost:5173`. Sesión vía `HttpSession`. Configurable
-por variables de entorno (`SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`,
-`DB_USER`, `DB_PASSWORD`, `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN`,
-`SEED_USERNAME`).
+The backend reads `SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
+`DB_PASSWORD`, `MIGRATIONS_PATH`, `CORS_ALLOWED_ORIGIN` and `SEED_USERNAME`.
 
 ## Frontend
 
-El frontend React replica el diseño del portal original de Nunegal. Incluye:
+- **Login** and **Employee data**: editable profile.
+- **Vacations**: yearly calendar with static demo data.
+- **Skills / Certifications**: CRUD with search, sorting and pagination.
+- **Other sections**: "Section not available" notice.
 
-- **Login** — logo, «Acceso al Portal del Empleado», usuario/contraseña.
-- **Datos del empleado** (pantalla inicial) — perfil con los 7 campos, editable.
-- **Vacaciones** — calendario anual con festivos, días disfrutados/marcados,
-  resumen por barras y leyenda (datos estáticos de demo).
-- **Conocimientos / Certificaciones** — CRUD completo contra la BBDD: tabla con
-  búsqueda, orden por columnas, paginación y tamaño de página, más alta/edición
-  (modal) y borrado con confirmación. Sin adjuntar archivos.
-- **Resto de secciones** — mensaje animado de «Sección no disponible» para la demo.
+## Continuous integration
 
-Más detalles en [`frontend-react/README.md`](frontend-react/README.md).
+Two independent workflows, each triggered only when its own files change:
 
-## Instrucciones para agentes
+- [`ci-backend.yml`](.github/workflows/ci-backend.yml) (`backend-java/**`):
+  Java tests and contract tests against PostgreSQL.
+- [`ci-frontend.yml`](.github/workflows/ci-frontend.yml) (`frontend-react/**`):
+  React install and build.
 
-Las reglas de implementación y verificación para agentes están en
-[`AGENTS.md`](AGENTS.md). La guía también se aplica a Claude Code mediante
-[`CLAUDE.md`](CLAUDE.md).
+SonarCloud analyzes every push to `main` and every pull request.
 
-## MCP del proyecto (VS Code)
+## AI agents
 
-La configuración compartida del workspace está en
-[`.vscode/mcp.json`](.vscode/mcp.json): registra el servidor remoto de GitHub y
-Playwright MCP. VS Code solicitará un fine-grained PAT para
-`dierodfer/demo-jam2`; el archivo solo contiene la referencia de entrada, no el
-token. Limita ese PAT a este repositorio y concede únicamente los permisos
-necesarios: Metadata de lectura, Contents de lectura, Issues de lectura y
-escritura, y Pull requests de lectura y escritura. VS Code guarda el valor de
-entrada de forma segura en el perfil local.
+Implementation and verification rules are in [`AGENTS.md`](AGENTS.md), which
+also applies to Claude Code through [`CLAUDE.md`](CLAUDE.md). The workspace MCP
+configuration (GitHub and Playwright) is in
+[`.vscode/mcp.json`](.vscode/mcp.json); VS Code asks for a PAT scoped to this
+repository and does not store it in the file.
 
-Playwright se ejecuta con `npx` al iniciar el servidor MCP y usa un contexto de
-navegador aislado. Requiere Node.js 20 o posterior y conexión a Internet para
-descargar el paquete la primera vez.
+## Out of scope
 
-## Fuera de alcance
-
-- **Integración de producto con GitHub**: fuera de alcance; el MCP solo ofrece
-  herramientas de desarrollo.
-- **Tests e2e de Playwright**: no están implementados; el servidor MCP queda
-  disponible para exploración y pruebas manuales con navegador.
-- **Kubernetes**: no aplica; son contenedores de Docker Compose.
+File uploads, Playwright e2e tests and Kubernetes.

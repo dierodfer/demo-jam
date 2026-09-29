@@ -11,6 +11,7 @@
 // Requiere Node 18+ (fetch nativo). Sin dependencias.
 
 const USERNAME = process.env.SEED_USERNAME || 'admin';
+const CLAVE_ARBITRARIA = String(Date.now());
 
 const PERFIL_KEYS = ['id', 'nombre', 'email', 'telefono', 'puesto', 'departamento', 'direccion', 'foto'];
 const CERT_KEYS = ['id', 'conocimiento', 'empresaEmisora', 'fecha'];
@@ -60,9 +61,10 @@ async function suite(base) {
   const check = (nombre, cond, detalle, shape) => {
     checks.push({ nombre, ok: !!cond, detalle: cond ? '' : detalle, shape });
     const icon = cond ? '  ✓' : '  ✗';
-    console.log(`${icon} ${nombre}${cond ? '' : ` — ${detalle}`}`);
+    const sufijo = cond ? '' : ` — ${detalle}`;
+    console.log(`${icon} ${nombre}${sufijo}`);
   };
-  const keysOf = (obj) => (obj && typeof obj === 'object' ? Object.keys(obj).sort() : null);
+  const keysOf = (obj) => (obj && typeof obj === 'object' ? Object.keys(obj).sort((a, b) => a.localeCompare(b)) : null);
   const shape = (r) => JSON.stringify({ status: r.status, keys: keysOf(Array.isArray(r.json) ? r.json[0] : r.json) });
   const hasKeys = (obj, keys) => obj && keys.every((k) => k in obj);
 
@@ -79,7 +81,7 @@ async function suite(base) {
     check('POST /api/login username incorrecto → 401', r.status === 401, `status=${r.status}`, shape(r));
 
     // --- Login ---
-    r = await c.request('POST', '/api/login', { username: USERNAME, password: 'cualquier-cosa' });
+    r = await c.request('POST', '/api/login', { username: USERNAME, password: CLAVE_ARBITRARIA });
     check('POST /api/login correcto → 200 + perfil + cookie',
       r.status === 200 && hasKeys(r.json, PERFIL_KEYS) && c.cookies.size > 0,
       `status=${r.status} keys=${keysOf(r.json)} cookies=${c.cookies.size}`, shape(r));
