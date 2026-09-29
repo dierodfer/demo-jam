@@ -7,6 +7,8 @@ import Vacaciones from './components/Vacaciones.jsx';
 import Conocimientos from './components/Conocimientos.jsx';
 import NoDisponible from './components/NoDisponible.jsx';
 
+const SECCIONES_IMPLEMENTADAS = new Set(['datos', 'vacaciones', 'conocimientos']);
+
 export const SECCIONES = [
   { id: 'datos', label: 'Datos del empleado' },
   { id: 'nominas', label: 'Nóminas' },
@@ -83,9 +85,7 @@ export default function App() {
         {seccion === 'datos' && <DatosEmpleado user={user} onUpdate={setUser} />}
         {seccion === 'vacaciones' && <Vacaciones />}
         {seccion === 'conocimientos' && <Conocimientos />}
-        {seccion !== 'datos' && seccion !== 'vacaciones' && seccion !== 'conocimientos' && (
-          <NoDisponible nombre={activa.label} />
-        )}
+        {!SECCIONES_IMPLEMENTADAS.has(seccion) && <NoDisponible nombre={activa.label} />}
       </main>
     </>
   );

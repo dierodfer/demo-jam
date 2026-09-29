@@ -1,6 +1,4 @@
-// Cliente del contrato shared/openapi.yaml.
 // Todas las peticiones llevan credentials: 'include' para la cookie de sesión.
-
 const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
 
 async function request(path, options = {}) {
