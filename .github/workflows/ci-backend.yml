@@ -60,11 +60,6 @@ jobs:
           java-version: "25"
           cache: maven
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: "22"
-
       - name: Probar backend Java
         run: make test-java
 
