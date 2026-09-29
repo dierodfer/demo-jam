@@ -9,6 +9,7 @@ RUN mvn -B clean package -DskipTests
 # ---- Runtime ----
 FROM eclipse-temurin:25-jre
 WORKDIR /app
+RUN groupadd --system app && useradd --system --gid app app
 COPY --from=build /app/target/portal-empleado-1.0.0.jar app.jar
 
 # Postgres corre como servicio "postgres" en la red de Docker Compose; las
@@ -18,5 +19,7 @@ ENV DB_PORT=5432
 ENV MIGRATIONS_PATH=/migrations
 ENV SERVER_PORT=8080
 EXPOSE 8080
+
+USER app
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
