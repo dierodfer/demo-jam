@@ -1,11 +1,6 @@
 name: CI Backend
 
 on:
-  push:
-    branches:
-      - "**"
-    paths:
-      - "backend-java/**"
   pull_request:
     branches:
       - main

@@ -1,11 +1,6 @@
 name: CI Frontend
 
 on:
-  push:
-    branches:
-      - "**"
-    paths:
-      - "frontend-react/**"
   pull_request:
     branches:
       - main
