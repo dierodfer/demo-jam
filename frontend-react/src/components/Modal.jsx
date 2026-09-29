@@ -12,7 +12,7 @@ export default function Modal({ onClose, children }) {
   return (
     <div className="modal-overlay">
       <button type="button" className="modal-fondo" aria-label="Cerrar" tabIndex={-1} onClick={onClose} />
-      <div className="modal" role="dialog" aria-modal="true">{children}</div>
+      <dialog className="modal" open aria-modal="true">{children}</dialog>
     </div>
   );
 }
