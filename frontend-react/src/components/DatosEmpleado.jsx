@@ -11,16 +11,12 @@ const CAMPOS = [
   { id: 'foto', label: 'Foto (URL)' },
 ];
 
+function formDesde(user) {
+  return CAMPOS.reduce((acc, c) => ({ ...acc, [c.id]: user[c.id] ?? '' }), {});
+}
+
 export default function DatosEmpleado({ user, onUpdate }) {
-  const [form, setForm] = useState({
-    nombre: user.nombre ?? '',
-    email: user.email ?? '',
-    telefono: user.telefono ?? '',
-    puesto: user.puesto ?? '',
-    departamento: user.departamento ?? '',
-    direccion: user.direccion ?? '',
-    foto: user.foto ?? '',
-  });
+  const [form, setForm] = useState(() => formDesde(user));
   const [estado, setEstado] = useState(null); // null | 'ok' | 'error'
   const [busy, setBusy] = useState(false);
 

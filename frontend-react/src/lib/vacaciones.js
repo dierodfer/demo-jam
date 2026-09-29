@@ -1,5 +1,3 @@
-// Datos y utilidades del calendario de Vacaciones (datos estáticos de demo).
-
 export const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
