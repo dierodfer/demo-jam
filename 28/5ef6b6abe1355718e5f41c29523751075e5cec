@@ -1,0 +1,19 @@
+scripts/contract-test.mjs
+  s_729293832215f3::t_378ebef4379dcc 17-29,71,92-99,103-121,177-302,320-322
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "285ef6b6abe1355718e5f41c29523751075e5cec",
+  "prompts": {},
+  "sessions": {
+    "s_729293832215f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "2b7f591b-7a04-4b4d-9513-25cc4d27c935",
+        "model": "unknown"
+      },
+      "human_author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
