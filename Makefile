@@ -4,7 +4,7 @@ COMPOSE_BASE       = docker compose -f docker-compose.yml
 COMPOSE_JAVA_REACT = docker compose -f docker-compose.yml -f docker-compose.java-react.yml
 
 .PHONY: help install install-java install-react install-react-ci \
-        test-java build-react \
+        test-java build-react test-e2e \
         dev run-java run-react \
         db-up db-down verify verify-java \
         up-java-react down-java-react clean
@@ -60,6 +60,9 @@ verify: ## Ejecuta los tests de contrato contra el backend Java (8080)
 	node scripts/contract-test.mjs http://localhost:8080
 
 verify-java: verify ## Alias compatible para los tests del backend Java
+
+test-e2e: ## Ejecuta los E2E de Playwright en local (requiere backend y PostgreSQL arrancados)
+	cd frontend-react && npm run test:e2e
 
 ## ---- Docker: stack Java + React ----
 
