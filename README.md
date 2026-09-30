@@ -27,7 +27,7 @@ frontend-react/                 Frontend (5173)
 shared/openapi.yaml             API contract
 shared/migrations/              SQL schema migrations
 scripts/contract-test.mjs       Contract tests
-Docker-compose*.yml             PostgreSQL and full stack
+docker-compose*.yml             PostgreSQL and full stack
 Makefile                        Entry point for every command
 AGENTS.md / CLAUDE.md           Guide for AI agents
 ```
