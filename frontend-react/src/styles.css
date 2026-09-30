@@ -638,7 +638,7 @@ input { font: inherit; }
   flex: none;
   border-radius: 50%;
   overflow: hidden;
-  background: linear-gradient(135deg, #74c0fc, #4263eb);
+  background: linear-gradient(135deg, #4263eb, #364fc7);
   color: #fff;
   font-weight: 700;
   user-select: none;
@@ -757,11 +757,11 @@ input { font: inherit; }
 }
 
 .obj-chip.tipo-perdido { background: #ffe3e3; color: #c92a2a; }
-.obj-chip.tipo-encontrado { background: #d3f9d8; color: #2b8a3e; }
+.obj-chip.tipo-encontrado { background: #d3f9d8; color: #1b5e2b; }
 .obj-chip.estado-abierto { background: #d0ebff; color: #1864ab; }
 .obj-chip.estado-entregado { background: #e5dbff; color: #5f3dc4; }
-.obj-chip.rec-pendiente { background: #fff3bf; color: #a66900; }
-.obj-chip.rec-aceptada { background: #d3f9d8; color: #2b8a3e; }
+.obj-chip.rec-pendiente { background: #fff3bf; color: #7a4d00; }
+.obj-chip.rec-aceptada { background: #d3f9d8; color: #1b5e2b; }
 .obj-chip.rec-rechazada { background: #ffe3e3; color: #c92a2a; }
 
 /* Formulario y detalle */

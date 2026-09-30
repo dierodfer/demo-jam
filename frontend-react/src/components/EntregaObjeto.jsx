@@ -38,6 +38,41 @@ function Chispas() {
   );
 }
 
+function Persona({ emp, rol, clase, av, reduce, chispas }) {
+  return (
+    <div className={`ent-persona ${clase}`}>
+      <div className="ent-persona-avatar">
+        <AnimatePresence mode="wait">
+          {emp ? (
+            <motion.div
+              key={emp.id}
+              initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+            >
+              <Avatar empleado={emp} size={av} className="ent-avatar" />
+            </motion.div>
+          ) : (
+            <div className="ent-avatar-vacio" style={{ width: av, height: av }} aria-hidden="true">?</div>
+          )}
+        </AnimatePresence>
+        {clase === 'ent-receptor' && chispas > 0 && <Chispas key={chispas} />}
+      </div>
+      <div className="ent-persona-nombre">{emp?.nombre ?? 'Sin elegir'}</div>
+      <div className="ent-persona-rol">{rol}</div>
+    </div>
+  );
+}
+
+function mensajeEstado(fase, objeto, destinatario) {
+  if (fase === 'enviando') return 'Entregando…';
+  if (fase !== 'entregado') return '';
+  if (!destinatario?.nombre) return 'Objeto entregado';
+  const quien = objeto.tipo === 'encontrado' ? destinatario.nombre : objeto.publicador.nombre;
+  return 'Objeto entregado a ' + quien;
+}
+
 /**
  * modo "nueva": el publicador elige destinatario y confirma la entrega.
  * modo "historial": entrega ya registrada; se puede repetir la animación.
@@ -122,7 +157,7 @@ export default function EntregaObjeto({ objeto, modo, preseleccion = '', onClose
       setEntregado(actualizado);
       setFase('entregado');
       onEntregado?.(actualizado);
-      rebote();
+      void rebote();
     } catch (err) {
       setError(err.message || 'No se pudo registrar la entrega');
       await animate('.ent-objeto', { x: 0, y: 0, rotate: 0, scale: 1 }, { duration: 0.4 });
@@ -135,38 +170,10 @@ export default function EntregaObjeto({ objeto, modo, preseleccion = '', onClose
     await animate('.ent-objeto', { x: 0, y: 0, rotate: 0, scale: 1 }, { duration: 0 });
     await volar();
     setFase('entregado');
-    rebote();
+    void rebote();
   }
 
-  const nombreDestino = destinatario?.nombre;
-  const estado = fase === 'entregado'
-    ? `Objeto entregado${nombreDestino ? ` a ${objeto.tipo === 'encontrado' ? nombreDestino : publicador.nombre}` : ''}`
-    : fase === 'enviando' ? 'Entregando…' : '';
-
-  const persona = (emp, rol, clase) => (
-    <div className={`ent-persona ${clase}`}>
-      <div className="ent-persona-avatar">
-        <AnimatePresence mode="wait">
-          {emp ? (
-            <motion.div
-              key={emp.id}
-              initial={reduce ? false : { scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-            >
-              <Avatar empleado={emp} size={av} className="ent-avatar" />
-            </motion.div>
-          ) : (
-            <div className="ent-avatar-vacio" style={{ width: av, height: av }} aria-hidden="true">?</div>
-          )}
-        </AnimatePresence>
-        {clase === 'ent-receptor' && chispas > 0 && <Chispas key={chispas} />}
-      </div>
-      <div className="ent-persona-nombre">{emp?.nombre ?? 'Sin elegir'}</div>
-      <div className="ent-persona-rol">{rol}</div>
-    </div>
-  );
+  const estado = mensajeEstado(fase, objeto, destinatario);
 
   const cerrar = fase === 'enviando' ? () => {} : onClose;
 
@@ -182,7 +189,7 @@ export default function EntregaObjeto({ objeto, modo, preseleccion = '', onClose
             ref={(el) => { escenario.current = el; scope.current = el; }}
             style={{ '--ent-av': `${av}px`, '--ent-obj': `${OBJ}px`, '--ent-pad': `${PAD}px`, '--ent-gap': `${GAP}px` }}
           >
-            {persona(origen, 'Entrega', 'ent-origen')}
+            <Persona emp={origen} rol="Entrega" clase="ent-origen" av={av} reduce={reduce} chispas={chispas} />
             <div className="ent-pista" aria-hidden="true">
               <span className="ent-linea" />
               {Array.from({ length: FANTASMAS }, (_, i) => (
@@ -192,7 +199,7 @@ export default function EntregaObjeto({ objeto, modo, preseleccion = '', onClose
                 <ObjetoIcono categoria={objeto.categoria} size={OBJ} />
               </div>
             </div>
-            {persona(receptor, 'Recibe', 'ent-receptor')}
+            <Persona emp={receptor} rol="Recibe" clase="ent-receptor" av={av} reduce={reduce} chispas={chispas} />
           </div>
 
           <p className="ent-resumen">

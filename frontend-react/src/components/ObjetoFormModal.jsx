@@ -63,7 +63,7 @@ export default function ObjetoFormModal({ inicial, onCancel, onSave }) {
 
           <div className="obj-campo">
             <label htmlFor="o-titulo">Título</label>
-            <input id="o-titulo" value={form.titulo} onChange={(e) => set('titulo', e.target.value)} autoFocus />
+            <input id="o-titulo" value={form.titulo} onChange={(e) => set('titulo', e.target.value)} />
           </div>
           <div className="obj-fila">
             <div className="obj-campo">

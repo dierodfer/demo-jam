@@ -91,11 +91,12 @@ async function suite(base) {
     r = await c.request('GET', '/api/certificaciones');
     check('GET /api/certificaciones sin sesión → 401', r.status === 401, `status=${r.status}`, shape(r));
 
-    for (const ruta of ['/api/objetos-perdidos', '/api/objetos-perdidos/resumen', '/api/empleados']) {
-      r = await c.request('GET', ruta);
-      check(`GET ${ruta} sin sesión → 401 {error}`,
-        r.status === 401 && typeof r.json?.error === 'string', `status=${r.status}`, shape(r));
-    }
+    const rutasProtegidas = ['/api/objetos-perdidos', '/api/objetos-perdidos/resumen', '/api/empleados'];
+    const sinSesion = await Promise.all(rutasProtegidas.map((ruta) => c.request('GET', ruta)));
+    sinSesion.forEach((resp, i) => {
+      check(`GET ${rutasProtegidas[i]} sin sesión → 401 {error}`,
+        resp.status === 401 && typeof resp.json?.error === 'string', `status=${resp.status}`, shape(resp));
+    });
     r = await c.request('POST', '/api/objetos-perdidos', OBJETO_INPUT);
     check('POST /api/objetos-perdidos sin sesión → 401', r.status === 401, `status=${r.status}`, shape(r));
 

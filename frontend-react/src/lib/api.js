@@ -46,7 +46,8 @@ export function listObjetos(filtros = {}) {
     if (v !== '' && v !== false && v != null) params.set(k, String(v));
   });
   const qs = params.toString();
-  return request(`/api/objetos-perdidos${qs ? `?${qs}` : ''}`);
+  const sufijo = qs ? `?${qs}` : '';
+  return request(`/api/objetos-perdidos${sufijo}`);
 }
 
 export const getResumenObjetos = () => request('/api/objetos-perdidos/resumen');
