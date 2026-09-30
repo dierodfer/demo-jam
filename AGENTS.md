@@ -46,6 +46,9 @@ Sigue este orden:
 ## Reglas
 
 - Escribe en español la UI, los comentarios, los commits y la documentación.
+- Usa siempre GitHub MCP para consultar y gestionar el repositorio, sus ramas,
+  issues y pull requests. Recurre a `gh` o al navegador solo si MCP no ofrece
+  la operación necesaria.
 - Usa claves JSON `camelCase` (por ejemplo, `empresaEmisora`), columnas SQL
   `snake_case` (por ejemplo, `empresa_emisora`) y fechas `YYYY-MM-DD`.
 - Devuelve errores con `{"error": "mensaje"}`. Usa `401` si falta la sesión y
