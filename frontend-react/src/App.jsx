@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
-import { getMe, logout } from './lib/api.js';
+import { useCallback, useEffect, useState } from 'react';
+import { getMe, getResumenObjetos, logout } from './lib/api.js';
 import Logo from './components/Logo.jsx';
 import Login from './components/Login.jsx';
 import DatosEmpleado from './components/DatosEmpleado.jsx';
 import Vacaciones from './components/Vacaciones.jsx';
 import Conocimientos from './components/Conocimientos.jsx';
+import ObjetosPerdidos from './components/ObjetosPerdidos.jsx';
 import NoDisponible from './components/NoDisponible.jsx';
 
-const SECCIONES_IMPLEMENTADAS = new Set(['datos', 'vacaciones', 'conocimientos']);
+const SECCIONES_IMPLEMENTADAS = new Set(['datos', 'vacaciones', 'conocimientos', 'objetos']);
 
 export const SECCIONES = [
   { id: 'datos', label: 'Datos del empleado' },
@@ -19,6 +20,7 @@ export const SECCIONES = [
   { id: 'horas', label: 'Registro de horas' },
   { id: 'ticket', label: 'Ticket Restaurant' },
   { id: 'inventario', label: 'Inventario' },
+  { id: 'objetos', label: 'Objetos perdidos' },
   { id: 'formacion', label: 'Formación Interna' },
   { id: 'conocimientos', label: 'Conocimientos / Certificaciones' },
   { id: 'salas', label: 'Reserva de salas' },
@@ -29,6 +31,7 @@ export default function App() {
   const [checking, setChecking] = useState(true);
   const [seccion, setSeccion] = useState('datos');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [novedades, setNovedades] = useState(0);
 
   useEffect(() => {
     getMe()
@@ -37,6 +40,16 @@ export default function App() {
       .finally(() => setChecking(false));
   }, []);
 
+  const refrescarNovedades = useCallback(() => {
+    getResumenObjetos()
+      .then((r) => setNovedades(r.objetosNuevos + r.reclamacionesPendientes))
+      .catch(() => setNovedades(0));
+  }, []);
+
+  useEffect(() => {
+    if (user) refrescarNovedades();
+  }, [user, refrescarNovedades]);
+
   async function cerrarSesion() {
     setMenuOpen(false);
     try {
@@ -44,6 +57,7 @@ export default function App() {
     } finally {
       setUser(null);
       setSeccion('datos');
+      setNovedades(0);
     }
   }
 
@@ -77,6 +91,11 @@ export default function App() {
             onClick={() => setSeccion(s.id)}
           >
             {s.label}
+            {s.id === 'objetos' && novedades > 0 && (
+              <span className="nav-badge" data-testid="objetos-badge" aria-label={`${novedades} novedades`}>
+                {novedades}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -85,6 +104,7 @@ export default function App() {
         {seccion === 'datos' && <DatosEmpleado user={user} onUpdate={setUser} />}
         {seccion === 'vacaciones' && <Vacaciones />}
         {seccion === 'conocimientos' && <Conocimientos />}
+        {seccion === 'objetos' && <ObjetosPerdidos onCambio={refrescarNovedades} />}
         {!SECCIONES_IMPLEMENTADAS.has(seccion) && <NoDisponible nombre={activa.label} />}
       </main>
     </>

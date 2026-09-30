@@ -37,3 +37,39 @@ export const updateCertificacion = (id, data) =>
 
 export const deleteCertificacion = (id) =>
   request(`/api/certificaciones/${id}`, { method: 'DELETE' });
+
+export const listEmpleados = () => request('/api/empleados');
+
+export function listObjetos(filtros = {}) {
+  const params = new URLSearchParams();
+  Object.entries(filtros).forEach(([k, v]) => {
+    if (v !== '' && v !== false && v != null) params.set(k, String(v));
+  });
+  const qs = params.toString();
+  return request(`/api/objetos-perdidos${qs ? `?${qs}` : ''}`);
+}
+
+export const getResumenObjetos = () => request('/api/objetos-perdidos/resumen');
+
+export const createObjeto = (data) =>
+  request('/api/objetos-perdidos', { method: 'POST', body: JSON.stringify(data) });
+
+export const updateObjeto = (id, data) =>
+  request(`/api/objetos-perdidos/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
+export const deleteObjeto = (id) =>
+  request(`/api/objetos-perdidos/${id}`, { method: 'DELETE' });
+
+export const entregarObjeto = (id, contraparteId) =>
+  request(`/api/objetos-perdidos/${id}/entrega`, { method: 'POST', body: JSON.stringify({ contraparteId }) });
+
+export const listReclamaciones = (id) => request(`/api/objetos-perdidos/${id}/reclamaciones`);
+
+export const reclamarObjeto = (id, mensaje) =>
+  request(`/api/objetos-perdidos/${id}/reclamaciones`, { method: 'POST', body: JSON.stringify({ mensaje }) });
+
+export const resolverReclamacion = (id, reclamacionId, estado) =>
+  request(`/api/objetos-perdidos/${id}/reclamaciones/${reclamacionId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ estado }),
+  });
