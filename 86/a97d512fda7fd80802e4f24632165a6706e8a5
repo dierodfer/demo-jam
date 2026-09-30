@@ -1,0 +1,30 @@
+backend-java/src/main/java/com/empresa/portal/config/PasswordHasher.java
+  h_6ab3373fee5e6b 1-54
+backend-java/src/main/java/com/empresa/portal/model/Empleado.java
+  h_6ab3373fee5e6b 45-47,122-129
+backend-java/src/main/java/com/empresa/portal/repo/EmpleadoRepository.java
+  h_6ab3373fee5e6b 6-7,9-10
+backend-java/src/main/java/com/empresa/portal/web/AuthController.java
+  h_6ab3373fee5e6b 3,19-21,41,43,51-55
+backend-java/src/main/java/com/empresa/portal/web/dto/LoginRequest.java
+  h_6ab3373fee5e6b 3
+shared/migrations/002_password_empleado.sql
+  h_6ab3373fee5e6b 1-6
+shared/migrations/003_usuario_sherpai.sql
+  h_6ab3373fee5e6b 1-18
+shared/migrations/004_objetos_perdidos.sql
+  h_6ab3373fee5e6b 1-33
+shared/openapi.yaml
+  h_6ab3373fee5e6b 9-12,25-28,34,36-38,58,203-480,482-490,501,584-737
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "86a97d512fda7fd80802e4f24632165a6706e8a5",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
