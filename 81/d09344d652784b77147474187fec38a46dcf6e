@@ -1,0 +1,16 @@
+shared/migrations/004_objetos_perdidos.sql
+  h_6ab3373fee5e6b 1-33
+shared/openapi.yaml
+  h_6ab3373fee5e6b 9-12,25-28,34,36-38,58,203-480,482-490,501,584-737
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "81d09344d652784b77147474187fec38a46dcf6e",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
