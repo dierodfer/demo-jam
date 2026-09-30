@@ -81,6 +81,7 @@ make db-up
 make install-react-ci
 make build-react
 make verify
+make test-e2e
 ```
 
 `make db-up` inicia PostgreSQL para el desarrollo local. Arranca el backend con
