@@ -73,7 +73,7 @@ The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
 ```bash
 curl -c cookies.txt -X POST http://localhost:8080/api/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"anything"}'
+  -d '{"username":"<username>","password":"<password>"}'
 curl -b cookies.txt http://localhost:8080/api/me
 ```
 
