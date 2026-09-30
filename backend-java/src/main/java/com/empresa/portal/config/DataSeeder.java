@@ -46,12 +46,44 @@ public class DataSeeder implements CommandLineRunner {
             repo.save(e);
         }
 
+        seedDemoUser("maria", "María López", "maria.lopez@empresa.com", "+34 600 100 003",
+                "Analista de Personas", "Recursos Humanos", "https://i.pravatar.cc/300?u=maria.lopez");
+        seedDemoUser("carlos", "Carlos Ruiz", "carlos.ruiz@empresa.com", "+34 600 100 004",
+                "Analista Financiero", "Finanzas", "https://i.pravatar.cc/300?u=carlos.ruiz");
+        seedDemoUser("lucia", "Lucía Martín", "lucia.martin@empresa.com", "+34 600 100 005",
+                "Diseñadora UX", "Producto", "https://i.pravatar.cc/300?u=lucia.martin");
+
         if (certRepo.count() == 0) {
             certRepo.save(cert("AWS Certified Developer – Associate", "AWS", "2025-11-17"));
             certRepo.save(cert("AWS Certified Solutions Architect – Associate", "AWS", "2025-11-17"));
             certRepo.save(cert("AWS Certified SysOps Administrator – Associate", "AWS", "2025-11-17"));
             certRepo.save(cert("Certificado PRL", "Avanta", "2026-05-29"));
         }
+    }
+
+    private void seedDemoUser(String username, String nombre, String email, String telefono,
+                              String puesto, String departamento, String foto) {
+        if (repo.findByUsername(username).isPresent()) {
+            return;
+        }
+        long id = repo.findAll().stream()
+                .map(Empleado::getId)
+                .filter(java.util.Objects::nonNull)
+                .mapToLong(Long::longValue)
+                .max()
+                .orElse(0L) + 1;
+        Empleado empleado = new Empleado();
+        empleado.setId(id);
+        empleado.setUsername(username);
+        empleado.setPasswordHash(PasswordHasher.hash("1234"));
+        empleado.setNombre(nombre);
+        empleado.setEmail(email);
+        empleado.setTelefono(telefono);
+        empleado.setPuesto(puesto);
+        empleado.setDepartamento(departamento);
+        empleado.setDireccion("Calle Mayor 1, 28013 Madrid");
+        empleado.setFoto(foto);
+        repo.save(empleado);
     }
 
     private Certificacion cert(String conocimiento, String empresa, String fecha) {

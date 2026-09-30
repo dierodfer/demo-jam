@@ -4,15 +4,25 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 /** Verifica contraseñas con PBKDF2 del JDK. Formato: pbkdf2$iteraciones$salt$hash (Base64). */
 public final class PasswordHasher {
 
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
+    private static final int ITERATIONS = 120_000;
     private static final int KEY_BITS = 256;
+    private static final int SALT_BYTES = 16;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private PasswordHasher() {
+    }
+
+    public static String hash(String password) {
+        byte[] salt = new byte[SALT_BYTES];
+        RANDOM.nextBytes(salt);
+        return "pbkdf2$" + ITERATIONS + "$" + encode(salt) + "$" + encode(derive(password, salt, ITERATIONS));
     }
 
     public static boolean matches(String password, String stored) {
@@ -36,5 +46,9 @@ public final class PasswordHasher {
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException("No se pudo calcular el hash de la contraseña", e);
         }
+    }
+
+    private static String encode(byte[] bytes) {
+        return Base64.getEncoder().encodeToString(bytes);
     }
 }

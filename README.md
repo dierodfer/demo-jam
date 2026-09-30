@@ -67,8 +67,8 @@ The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
 | PUT / DELETE | `/api/certificaciones/{id}` | Updates / deletes a certification |
 
 - Demo login: `admin` (`SEED_USERNAME`) accepts any password; `sherpai` uses
-  password `1234` (stored as a PBKDF2 hash). Incorrect credentials and requests
-  without a session return `401`.
+  password `1234` (stored as a PBKDF2 hash). `maria`, `carlos` and `lucia` also
+  use `1234`. Incorrect credentials and requests without a session return `401`.
 - The frontend sends requests with `credentials: 'include'`.
 
 ```bash
