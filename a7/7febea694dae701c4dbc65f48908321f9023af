@@ -1,0 +1,14 @@
+frontend-react/package-lock.json
+  h_6ab3373fee5e6b 304-326,328-330
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a77febea694dae701c4dbc65f48908321f9023af",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
