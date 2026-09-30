@@ -1,0 +1,20 @@
+.gitignore
+  h_6ab3373fee5e6b 7-9
+Makefile
+  h_6ab3373fee5e6b 7,64-66
+frontend-react/e2e/objetos-perdidos.spec.js
+  h_6ab3373fee5e6b 1-206
+frontend-react/playwright.config.js
+  h_6ab3373fee5e6b 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dd8858d2c769a3d1914de59949877bbecd5e5727",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
