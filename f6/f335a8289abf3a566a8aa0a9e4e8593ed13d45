@@ -1,0 +1,48 @@
+frontend-react/package-lock.json
+  s_729293832215f3::t_7050667570ba55 11,16,52,305-307,394-409,633-666,818,924-946,1276-1312,1362,1370-1398,1433,1443,1549,1588
+frontend-react/src/components/EntregaObjeto.jsx
+  s_729293832215f3::t_5c83cbd0f78a61 1-262
+frontend-react/src/styles.css
+  s_729293832215f3::t_2f05ecbdd4253f 611-943
+frontend-react/package.json
+  s_729293832215f3::t_a0729c374db917 9-10,13,18
+frontend-react/src/App.jsx
+  s_729293832215f3::t_937d054145794d 1-2,8,11,23,34,43-52,60,94-98,107
+frontend-react/src/components/Avatar.jsx
+  s_729293832215f3::t_73daab545c25e5 1-20
+frontend-react/src/components/Modal.jsx
+  s_729293832215f3::t_44cb6441dc4b48 3,15
+frontend-react/src/components/ObjetoDetalle.jsx
+  s_729293832215f3::t_0ae818da51cdc6 1-154
+frontend-react/src/components/ObjetoFormModal.jsx
+  s_729293832215f3::t_1998135b5162b9 1-105
+frontend-react/src/components/ObjetoIcono.jsx
+  s_729293832215f3::t_b775dd1de1b3d1 1-110
+frontend-react/src/components/ObjetosPerdidos.jsx
+  s_729293832215f3::t_515dff1a1e6dd8 1-203
+frontend-react/src/lib/api.js
+  s_729293832215f3::t_ba004ffdf89f6d 40-75
+frontend-react/src/lib/objetos.js
+  s_729293832215f3::t_d63ad21dc8f92d 1-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6f335a8289abf3a566a8aa0a9e4e8593ed13d45",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_729293832215f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "2b7f591b-7a04-4b4d-9513-25cc4d27c935",
+        "model": "unknown"
+      },
+      "human_author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
