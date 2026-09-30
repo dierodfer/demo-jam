@@ -1,0 +1,19 @@
+backend-java/src/test/java/com/empresa/portal/service/ObjetoPerdidoServiceTest.java
+  s_729293832215f3::t_bbcb8d0f8b0509 1-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7cc745ec05db2cf42964b6061f3f24cb1276ba5c",
+  "prompts": {},
+  "sessions": {
+    "s_729293832215f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "2b7f591b-7a04-4b4d-9513-25cc4d27c935",
+        "model": "unknown"
+      },
+      "human_author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
