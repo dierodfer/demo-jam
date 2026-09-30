@@ -66,9 +66,8 @@ The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
 | GET / POST | `/api/certificaciones` | Lists / creates certifications |
 | PUT / DELETE | `/api/certificaciones/{id}` | Updates / deletes a certification |
 
-- Demo login: `admin` (`SEED_USERNAME`) accepts any password; `sherpai` uses
-  password `1234` (stored as a PBKDF2 hash). `maria`, `carlos` and `lucia` also
-  use `1234`. Incorrect credentials and requests without a session return `401`.
+- Login uses a session cookie. Incorrect credentials and requests without a
+  session return `401`.
 - The frontend sends requests with `credentials: 'include'`.
 
 ```bash
@@ -83,8 +82,8 @@ curl -b cookies.txt http://localhost:8080/api/me
 The schema is defined only by the migrations in
 [`shared/migrations/`](shared/migrations), which the backend applies on startup
 (`schema_migration` table). To change it, add a new migration; never edit one
-that was already applied. Demo data is seeded by the backend. In Docker, data
-persists in the `portal-db-data` volume.
+that was already applied. In Docker, data persists in the `portal-db-data`
+volume.
 
 ## Configuration
 
