@@ -11,8 +11,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * Siembra un único empleado (id=1) y sus certificaciones al arrancar si están
- * vacíos. Corre con @Order(2), después de las migraciones (@Order(1)).
+ * Siembra al empleado admin (id=1) y sus certificaciones al arrancar si no
+ * existen. Corre con @Order(2), después de las migraciones (@Order(1)); el
+ * usuario sherpai lo crea la migración 003.
  */
 @Component
 @Order(2)
@@ -31,7 +32,7 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (repo.count() == 0) {
+        if (!repo.existsById(AuthController.EMPLEADO_ID)) {
             Empleado e = new Empleado();
             e.setId(AuthController.EMPLEADO_ID);
             e.setUsername(seedUsername);
