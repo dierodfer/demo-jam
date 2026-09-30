@@ -5,6 +5,8 @@ backend-java/target/
 node_modules/
 dist/
 .npmrc
+test-results/
+playwright-report/
 
 # IDE / SO
 .idea/

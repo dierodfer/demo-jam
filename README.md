@@ -49,6 +49,7 @@ make db-up            # PostgreSQL
 make dev              # backend + frontend with hot reload
 make up-java-react    # full stack in Docker (down-java-react to stop)
 make verify           # contract tests (backend must be running)
+make test-e2e         # Playwright E2E, local only (backend must be running)
 ```
 
 The frontend reads `VITE_API_BASE` (default `http://localhost:8080`); in Docker
@@ -65,6 +66,13 @@ The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
 | GET / PUT | `/api/me` | Reads / updates the profile |
 | GET / POST | `/api/certificaciones` | Lists / creates certifications |
 | PUT / DELETE | `/api/certificaciones/{id}` | Updates / deletes a certification |
+| GET | `/api/empleados` | Minimal directory (id, name, photo, department) |
+| GET / POST | `/api/objetos-perdidos` | Lists (filters `tipo`, `estado`, `categoria`, `seccion`, `q`, `mios`, `reclamados`) / publishes lost and found objects |
+| GET | `/api/objetos-perdidos/resumen` | Counters for the news badge |
+| GET / PUT / DELETE | `/api/objetos-perdidos/{id}` | Detail, edit and delete (publisher only) |
+| POST | `/api/objetos-perdidos/{id}/entrega` | Marks the object as handed over to an employee |
+| GET / POST | `/api/objetos-perdidos/{id}/reclamaciones` | Lists (publisher) / creates a claim |
+| PUT | `/api/objetos-perdidos/{id}/reclamaciones/{rid}` | Accepts or rejects a claim |
 
 - Login uses a session cookie. Incorrect credentials and requests without a
   session return `401`.
@@ -95,6 +103,11 @@ The backend reads `SERVER_PORT`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
 - **Login** and **Employee data**: editable profile.
 - **Vacations**: yearly calendar with static demo data.
 - **Skills / Certifications**: CRUD with search, sorting and pagination.
+- **Lost and found** ("Objetos perdidos"): publish lost or found objects with
+  office section and date, filter them, claim them and hand them over. The
+  hand-over view animates the object travelling between two avatars with
+  `motion` (Framer Motion) and honors `prefers-reduced-motion`. New items show
+  as a badge in the navigation.
 - **Other sections**: "Section not available" notice.
 
 ## Continuous integration
@@ -107,6 +120,9 @@ Two independent workflows, each triggered only when its own files change:
   React install and build.
 
 SonarCloud analyzes every push to `main` and every pull request.
+
+The Playwright E2E tests (`make test-e2e`, see
+[`frontend-react/README.md`](frontend-react/README.md)) are not part of CI.
 
 ## AI agents
 

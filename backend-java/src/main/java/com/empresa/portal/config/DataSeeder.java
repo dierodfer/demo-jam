@@ -2,13 +2,17 @@ package com.empresa.portal.config;
 
 import com.empresa.portal.model.Certificacion;
 import com.empresa.portal.model.Empleado;
+import com.empresa.portal.model.ObjetoPerdido;
 import com.empresa.portal.repo.CertificacionRepository;
 import com.empresa.portal.repo.EmpleadoRepository;
+import com.empresa.portal.repo.ObjetoPerdidoRepository;
 import com.empresa.portal.web.AuthController;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 /**
  * Siembra al empleado admin (id=1) y sus certificaciones al arrancar si no
@@ -21,12 +25,15 @@ public class DataSeeder implements CommandLineRunner {
 
     private final EmpleadoRepository repo;
     private final CertificacionRepository certRepo;
+    private final ObjetoPerdidoRepository objetoRepo;
     private final String seedUsername;
 
     public DataSeeder(EmpleadoRepository repo, CertificacionRepository certRepo,
+                      ObjetoPerdidoRepository objetoRepo,
                       @Value("${app.seed.username}") String seedUsername) {
         this.repo = repo;
         this.certRepo = certRepo;
+        this.objetoRepo = objetoRepo;
         this.seedUsername = seedUsername;
     }
 
@@ -59,6 +66,50 @@ public class DataSeeder implements CommandLineRunner {
             certRepo.save(cert("AWS Certified SysOps Administrator – Associate", "AWS", "2025-11-17"));
             certRepo.save(cert("Certificado PRL", "Avanta", "2026-05-29"));
         }
+
+        seedObjetos();
+    }
+
+    /** Objetos demo con fechas relativas a hoy para que el badge de novedades tenga datos. */
+    private void seedObjetos() {
+        if (objetoRepo.count() > 0) {
+            return;
+        }
+        Long maria = idDe("maria");
+        Long carlos = idDe("carlos");
+        Long lucia = idDe("lucia");
+        if (maria == null || carlos == null || lucia == null) {
+            return;
+        }
+        objetoRepo.save(objeto(maria, "Llaves con llavero azul", "Llavero de tela azul con tres llaves.",
+                "llaves", "encontrado", "recepcion", "Mostrador de entrada", 1));
+        objetoRepo.save(objeto(carlos, "Auriculares inalámbricos negros", "Estuche blanco con auriculares negros.",
+                "auriculares", "encontrado", "sala-reuniones", "Mesa de la sala Atenea", 2));
+        objetoRepo.save(objeto(lucia, "Móvil con funda roja", "He perdido mi móvil, tiene una funda roja.",
+                "movil", "perdido", "cocina", "Cerca de la cafetera", 3));
+        objetoRepo.save(objeto(maria, "Chaqueta gris", "Chaqueta de punto gris, talla M.",
+                "ropa", "perdido", "planta1", "Zona de escritorios", 5));
+    }
+
+    private Long idDe(String username) {
+        return repo.findByUsername(username).map(Empleado::getId).orElse(null);
+    }
+
+    private ObjetoPerdido objeto(Long publicadorId, String titulo, String descripcion, String categoria,
+                                 String tipo, String seccion, String ubicacion, int diasAtras) {
+        String fecha = LocalDate.now().minusDays(diasAtras).toString();
+        ObjetoPerdido o = new ObjetoPerdido();
+        o.setPublicadorId(publicadorId);
+        o.setTitulo(titulo);
+        o.setDescripcion(descripcion);
+        o.setCategoria(categoria);
+        o.setTipo(tipo);
+        o.setEstado("abierto");
+        o.setSeccion(seccion);
+        o.setUbicacion(ubicacion);
+        o.setFechaSuceso(fecha);
+        o.setFechaPublicacion(fecha);
+        return o;
     }
 
     private void seedDemoUser(String username, String nombre, String email, String telefono,

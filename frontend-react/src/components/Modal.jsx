@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export default function Modal({ onClose, children }) {
+export default function Modal({ onClose, children, className = '', ...props }) {
   useEffect(() => {
     const alPulsar = (e) => {
       if (e.key === 'Escape') onClose();
@@ -12,7 +12,7 @@ export default function Modal({ onClose, children }) {
   return (
     <div className="modal-overlay">
       <button type="button" className="modal-fondo" aria-label="Cerrar" tabIndex={-1} onClick={onClose} />
-      <dialog className="modal" open aria-modal="true">{children}</dialog>
+      <dialog className={`modal ${className}`.trim()} open aria-modal="true" {...props}>{children}</dialog>
     </div>
   );
 }
