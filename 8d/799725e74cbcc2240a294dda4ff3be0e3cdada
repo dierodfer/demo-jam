@@ -1,0 +1,23 @@
+frontend-react/package-lock.json
+  s_729293832215f3::t_7050667570ba55 11,16,52,305-307,394-409,633-666,818,924-946,1276-1312,1362,1370-1398,1433,1443,1549,1588
+frontend-react/src/components/EntregaObjeto.jsx
+  s_729293832215f3::t_5c83cbd0f78a61 1-276
+frontend-react/src/styles.css
+  s_729293832215f3::t_2f05ecbdd4253f 597-929
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d799725e74cbcc2240a294dda4ff3be0e3cdada",
+  "prompts": {},
+  "sessions": {
+    "s_729293832215f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "2b7f591b-7a04-4b4d-9513-25cc4d27c935",
+        "model": "unknown"
+      },
+      "human_author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
