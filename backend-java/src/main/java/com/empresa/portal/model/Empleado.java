@@ -42,6 +42,9 @@ public class Empleado {
     @Column(name = "foto")
     private String foto;
 
+    @Column(name = "password_hash")
+    private String passwordHash;
+
     public Empleado() {
     }
 
@@ -115,5 +118,13 @@ public class Empleado {
 
     public void setFoto(String foto) {
         this.foto = foto;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }

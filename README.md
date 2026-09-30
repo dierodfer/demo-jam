@@ -27,7 +27,7 @@ frontend-react/                 Frontend (5173)
 shared/openapi.yaml             API contract
 shared/migrations/              SQL schema migrations
 scripts/contract-test.mjs       Contract tests
-docker-compose*.yml             PostgreSQL and full stack
+Docker-compose*.yml             PostgreSQL and full stack
 Makefile                        Entry point for every command
 AGENTS.md / CLAUDE.md           Guide for AI agents
 ```
@@ -66,8 +66,9 @@ The full contract is in [`shared/openapi.yaml`](shared/openapi.yaml).
 | GET / POST | `/api/certificaciones` | Lists / creates certifications |
 | PUT / DELETE | `/api/certificaciones/{id}` | Updates / deletes a certification |
 
-- Simulated login: the user is `admin` (`SEED_USERNAME`) and any password is
-  accepted. Without a session, the API returns `401`.
+- Demo login: `admin` (`SEED_USERNAME`) accepts any password; `sherpai` uses
+  password `1234` (stored as a PBKDF2 hash). Incorrect credentials and requests
+  without a session return `401`.
 - The frontend sends requests with `credentials: 'include'`.
 
 ```bash
