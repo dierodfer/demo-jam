@@ -1,0 +1,20 @@
+AGENTS.md
+  h_6ab3373fee5e6b 49-51,84
+README.md
+  h_6ab3373fee5e6b 84,112,114,116
+frontend-react/README.md
+  h_6ab3373fee5e6b 24
+frontend-react/package-lock.json
+  h_6ab3373fee5e6b 304-326,328-330
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4dcafeeb5c8363a684ebfc47c9d1bdbe00d0f151",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}

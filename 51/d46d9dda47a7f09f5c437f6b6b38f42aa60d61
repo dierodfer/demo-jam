@@ -1,0 +1,56 @@
+frontend-react/package-lock.json
+  s_729293832215f3::t_7050667570ba55 11,16,52,417-432,807,913-935,1265-1301,1351,1359-1387,1422,1432,1538,1577
+frontend-react/src/components/EntregaObjeto.jsx
+  s_729293832215f3::t_5c83cbd0f78a61 1-262,1-6,8-81,82-170,173,176-259,261-262
+frontend-react/src/styles.css
+  s_729293832215f3::t_2f05ecbdd4253f 611-943
+frontend-react/package.json
+  s_729293832215f3::t_a0729c374db917 9-10,13,18
+frontend-react/src/App.jsx
+  s_729293832215f3::t_937d054145794d 1-2,8,11,23,34,43-52,60,94-98,107
+frontend-react/src/components/Avatar.jsx
+  s_729293832215f3::t_73daab545c25e5 1-20
+frontend-react/src/components/Modal.jsx
+  s_729293832215f3::t_44cb6441dc4b48 3,15
+frontend-react/src/components/ObjetoDetalle.jsx
+  s_729293832215f3::t_0ae818da51cdc6 1-154
+frontend-react/src/components/ObjetoFormModal.jsx
+  s_729293832215f3::t_1998135b5162b9 1-105
+frontend-react/src/components/ObjetoIcono.jsx
+  s_729293832215f3::t_b775dd1de1b3d1 1-110
+frontend-react/src/components/ObjetosPerdidos.jsx
+  s_729293832215f3::t_515dff1a1e6dd8 1-203
+frontend-react/src/lib/api.js
+  s_729293832215f3::t_ba004ffdf89f6d 40-75
+frontend-react/src/lib/objetos.js
+  s_729293832215f3::t_d63ad21dc8f92d 1-46
+.gitignore
+  h_6ab3373fee5e6b 7-9
+Makefile
+  h_6ab3373fee5e6b 7,64-66
+frontend-react/e2e/objetos-perdidos.spec.js
+  h_6ab3373fee5e6b 1-206
+frontend-react/playwright.config.js
+  h_6ab3373fee5e6b 1-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "51d46d9dda47a7f09f5c437f6b6b38f42aa60d61",
+  "prompts": {},
+  "humans": {
+    "h_6ab3373fee5e6b": {
+      "author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_729293832215f3": {
+      "agent_id": {
+        "tool": "github-copilot",
+        "id": "2b7f591b-7a04-4b4d-9513-25cc4d27c935",
+        "model": "unknown"
+      },
+      "human_author": "Diego Rodriguez <dierodfer6@gmail.com>"
+    }
+  }
+}
