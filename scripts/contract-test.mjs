@@ -90,6 +90,15 @@ async function suite(base) {
     await c.request('POST', '/api/logout');
     c.clearCookies();
 
+    for (const username of ['maria', 'carlos', 'lucia']) {
+      r = await c.request('POST', '/api/login', { username, password: '1234' });
+      check(`POST /api/login ${username} → 200 + perfil + cookie`,
+        r.status === 200 && hasKeys(r.json, PERFIL_KEYS) && c.cookies.size > 0,
+        `status=${r.status} keys=${keysOf(r.json)} cookies=${c.cookies.size}`, shape(r));
+      await c.request('POST', '/api/logout');
+      c.clearCookies();
+    }
+
     // --- Login ---
     r = await c.request('POST', '/api/login', { username: USERNAME, password: CLAVE_ARBITRARIA });
     check('POST /api/login correcto → 200 + perfil + cookie',

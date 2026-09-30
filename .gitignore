@@ -4,6 +4,7 @@ backend-java/target/
 # Node
 node_modules/
 dist/
+.npmrc
 
 # IDE / SO
 .idea/

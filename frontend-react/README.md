@@ -9,3 +9,8 @@ Se lanza desde la raíz del repo con `make`: `make run-react` (desarrollo),
 | Variable | Por defecto | Descripción |
 |---|---|---|
 | `VITE_API_BASE` | `http://localhost:8080` | URL base de la API |
+
+Las peticiones usan `credentials: 'include'` para la cookie de sesión.
+
+En Docker, el frontend se sirve como build estático con nginx; en local, Vite
+ofrece recarga en caliente.
