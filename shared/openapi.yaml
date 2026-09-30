@@ -22,6 +22,10 @@ tags:
     description: Perfil del empleado autenticado
   - name: certificaciones
     description: Conocimientos / certificaciones del empleado (CRUD)
+  - name: empleados
+    description: Directorio mínimo de empleados
+  - name: objetos-perdidos
+    description: Objetos perdidos y encontrados en la oficina, reclamaciones y entregas
 
 paths:
   /api/login:
@@ -196,7 +200,294 @@ paths:
         '404':
           description: No existe o no pertenece al empleado.
 
+  /api/empleados:
+    get:
+      tags: [empleados]
+      summary: Directorio mínimo de empleados
+      description: Solo id, nombre, foto y departamento. Sirve para elegir destinatario de una entrega.
+      responses:
+        '200':
+          description: Lista de empleados ordenada por nombre.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmpleadoResumen'
+        '401':
+          description: No hay sesión activa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/objetos-perdidos:
+    get:
+      tags: [objetos-perdidos]
+      summary: Lista los objetos perdidos y encontrados (visibles para todos los empleados)
+      parameters:
+        - name: tipo
+          in: query
+          schema:
+            $ref: '#/components/schemas/TipoObjeto'
+        - name: estado
+          in: query
+          schema:
+            $ref: '#/components/schemas/EstadoObjeto'
+        - name: categoria
+          in: query
+          schema:
+            $ref: '#/components/schemas/CategoriaObjeto'
+        - name: seccion
+          in: query
+          schema:
+            $ref: '#/components/schemas/SeccionOficina'
+        - name: q
+          in: query
+          description: Búsqueda por título, descripción o ubicación.
+          schema:
+            type: string
+        - name: mios
+          in: query
+          description: Solo los objetos publicados por el empleado de la sesión.
+          schema:
+            type: boolean
+        - name: reclamados
+          in: query
+          description: Solo los objetos que el empleado de la sesión ha reclamado.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Objetos, del más reciente al más antiguo.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ObjetoPerdido'
+        '401':
+          description: No hay sesión activa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [objetos-perdidos]
+      summary: Publica un objeto perdido o encontrado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjetoPerdidoInput'
+      responses:
+        '201':
+          description: Objeto publicado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjetoPerdido'
+        '400':
+          description: Faltan campos obligatorios o algún valor no es válido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No hay sesión activa.
+
+  /api/objetos-perdidos/resumen:
+    get:
+      tags: [objetos-perdidos]
+      summary: Contadores para el badge de novedades
+      description: >
+        objetosNuevos cuenta los objetos abiertos publicados por otros en los
+        últimos 7 días. reclamacionesPendientes cuenta las reclamaciones sin
+        resolver de los objetos abiertos del empleado.
+      responses:
+        '200':
+          description: Resumen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumenObjetos'
+        '401':
+          description: No hay sesión activa.
+
+  /api/objetos-perdidos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ObjetoId'
+    get:
+      tags: [objetos-perdidos]
+      summary: Detalle de un objeto
+      responses:
+        '200':
+          description: Objeto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjetoPerdido'
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe.
+    put:
+      tags: [objetos-perdidos]
+      summary: Actualiza un objeto abierto (solo su publicador)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObjetoPerdidoInput'
+      responses:
+        '200':
+          description: Objeto actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjetoPerdido'
+        '400':
+          description: Datos no válidos.
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe o no lo ha publicado el empleado.
+        '409':
+          description: El objeto ya está entregado.
+    delete:
+      tags: [objetos-perdidos]
+      summary: Elimina un objeto y sus reclamaciones (solo su publicador)
+      responses:
+        '204':
+          description: Objeto eliminado.
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe o no lo ha publicado el empleado.
+
+  /api/objetos-perdidos/{id}/entrega:
+    post:
+      tags: [objetos-perdidos]
+      summary: Da el objeto por entregado (solo su publicador)
+      description: >
+        Marca el objeto como entregado. Las reclamaciones pendientes del
+        destinatario pasan a aceptada y las demás a rechazada. En un objeto
+        encontrado el objeto pasa del publicador al destinatario; en uno
+        perdido, del destinatario (quien lo encontró) al publicador.
+      parameters:
+        - $ref: '#/components/parameters/ObjetoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntregaInput'
+      responses:
+        '200':
+          description: Objeto entregado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjetoPerdido'
+        '400':
+          description: Destinatario inexistente o igual al publicador.
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe o no lo ha publicado el empleado.
+        '409':
+          description: El objeto ya está entregado.
+
+  /api/objetos-perdidos/{id}/reclamaciones:
+    parameters:
+      - $ref: '#/components/parameters/ObjetoId'
+    get:
+      tags: [objetos-perdidos]
+      summary: Lista las reclamaciones del objeto (solo su publicador)
+      responses:
+        '200':
+          description: Reclamaciones.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reclamacion'
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe o no lo ha publicado el empleado.
+    post:
+      tags: [objetos-perdidos]
+      summary: Reclama un objeto de otro empleado
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReclamacionInput'
+      responses:
+        '201':
+          description: Reclamación creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reclamacion'
+        '400':
+          description: El empleado no puede reclamar su propio objeto.
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe.
+        '409':
+          description: El objeto ya está entregado o el empleado ya lo reclamó.
+
+  /api/objetos-perdidos/{id}/reclamaciones/{reclamacionId}:
+    put:
+      tags: [objetos-perdidos]
+      summary: Acepta o rechaza una reclamación (solo el publicador)
+      parameters:
+        - $ref: '#/components/parameters/ObjetoId'
+        - name: reclamacionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReclamacionUpdate'
+      responses:
+        '200':
+          description: Reclamación actualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reclamacion'
+        '400':
+          description: El estado debe ser aceptada o rechazada.
+        '401':
+          description: No hay sesión activa.
+        '404':
+          description: No existe o el objeto no lo ha publicado el empleado.
+        '409':
+          description: La reclamación ya está resuelta o el objeto está entregado.
+
 components:
+  parameters:
+    ObjetoId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
   schemas:
     LoginRequest:
       type: object
@@ -289,6 +580,160 @@ components:
         fecha:
           type: string
           example: "2025-11-17"
+
+    EmpleadoResumen:
+      type: object
+      description: Datos públicos mínimos de un empleado (sin username ni email).
+      properties:
+        id:
+          type: integer
+          format: int64
+        nombre:
+          type: string
+        foto:
+          type: string
+        departamento:
+          type: string
+
+    TipoObjeto:
+      type: string
+      enum: [perdido, encontrado]
+
+    EstadoObjeto:
+      type: string
+      enum: [abierto, entregado]
+
+    CategoriaObjeto:
+      type: string
+      enum: [llaves, movil, cartera, ropa, auriculares, documentos, otros]
+
+    SeccionOficina:
+      type: string
+      enum: [recepcion, planta1, planta2, sala-reuniones, cocina, parking, otras]
+
+    ObjetoPerdido:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titulo:
+          type: string
+          example: Llaves con llavero azul
+        descripcion:
+          type: string
+        categoria:
+          $ref: '#/components/schemas/CategoriaObjeto'
+        tipo:
+          $ref: '#/components/schemas/TipoObjeto'
+        estado:
+          $ref: '#/components/schemas/EstadoObjeto'
+        seccion:
+          $ref: '#/components/schemas/SeccionOficina'
+        ubicacion:
+          type: string
+          description: Lugar exacto dentro de la sección.
+          example: Mesa junto a la ventana
+        fechaSuceso:
+          type: string
+          description: Desde cuándo está perdido o encontrado (YYYY-MM-DD).
+          example: "2026-09-28"
+        fechaPublicacion:
+          type: string
+          example: "2026-09-29"
+        fechaEntrega:
+          type: string
+          nullable: true
+          example: "2026-09-30"
+        publicador:
+          $ref: '#/components/schemas/EmpleadoResumen'
+        contraparte:
+          allOf:
+            - $ref: '#/components/schemas/EmpleadoResumen'
+          nullable: true
+          description: Destinatario de la entrega; solo existe si el objeto está entregado.
+        esMio:
+          type: boolean
+          description: El empleado de la sesión es el publicador.
+        miReclamacion:
+          type: string
+          nullable: true
+          enum: [pendiente, aceptada, rechazada]
+          description: Estado de la reclamación del empleado de la sesión, si existe.
+        reclamacionesPendientes:
+          type: integer
+          description: Reclamaciones sin resolver; solo se informa al publicador (0 para el resto).
+
+    ObjetoPerdidoInput:
+      type: object
+      required: [titulo, tipo, categoria, seccion]
+      properties:
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        categoria:
+          $ref: '#/components/schemas/CategoriaObjeto'
+        tipo:
+          $ref: '#/components/schemas/TipoObjeto'
+        seccion:
+          $ref: '#/components/schemas/SeccionOficina'
+        ubicacion:
+          type: string
+        fechaSuceso:
+          type: string
+          description: YYYY-MM-DD. Si falta, se usa la fecha actual.
+
+    EntregaInput:
+      type: object
+      required: [contraparteId]
+      properties:
+        contraparteId:
+          type: integer
+          format: int64
+          description: Id del empleado destinatario (de GET /api/empleados).
+
+    Reclamacion:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        objetoId:
+          type: integer
+          format: int64
+        mensaje:
+          type: string
+        estado:
+          type: string
+          enum: [pendiente, aceptada, rechazada]
+        fecha:
+          type: string
+          example: "2026-09-30"
+        reclamante:
+          $ref: '#/components/schemas/EmpleadoResumen'
+
+    ReclamacionInput:
+      type: object
+      properties:
+        mensaje:
+          type: string
+
+    ReclamacionUpdate:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          type: string
+          enum: [aceptada, rechazada]
+
+    ResumenObjetos:
+      type: object
+      properties:
+        objetosNuevos:
+          type: integer
+        reclamacionesPendientes:
+          type: integer
 
     Error:
       type: object
