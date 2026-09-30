@@ -6,9 +6,10 @@ info:
     Contrato de API del Portal de Empleado, implementado por el backend Java
     en el puerto 8080.
 
-    Autenticación: login simulado. El username debe coincidir con el empleado
-    sembrado en la base de datos; cualquier contraseña es válida. La sesión se
-    mantiene mediante la cookie JSESSIONID.
+    Autenticación: login basado en sesión. El username debe coincidir con un
+    empleado de la base de datos. Si el empleado tiene contraseña guardada
+    (hash), debe coincidir; si no la tiene, cualquier contraseña es válida
+    (login simulado). La sesión se mantiene mediante la cookie JSESSIONID.
 
 servers:
   - url: http://localhost:8080
@@ -26,11 +27,11 @@ paths:
   /api/login:
     post:
       tags: [auth]
-      summary: Inicia sesión (simulado)
+      summary: Inicia sesión
       description: >
-        Comprueba que el username coincida con el empleado sembrado. La
-        contraseña se ignora (cualquier valor es válido). Si es correcto abre
-        una sesión y devuelve la cookie de sesión.
+        Busca al empleado por username. Si tiene contraseña guardada, debe
+        coincidir; si no, la contraseña se ignora (cualquier valor es válido).
+        Si es correcto abre una sesión y devuelve la cookie de sesión.
       requestBody:
         required: true
         content:
@@ -50,7 +51,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Empleado'
         '401':
-          description: Username desconocido.
+          description: Username desconocido o contraseña incorrecta.
           content:
             application/json:
               schema:
@@ -206,7 +207,7 @@ components:
           example: admin
         password:
           type: string
-          description: Se ignora (cualquier valor es válido).
+          description: Solo se valida si el empleado tiene contraseña guardada; en otro caso se ignora.
           example: cualquier-cosa
 
     Empleado:

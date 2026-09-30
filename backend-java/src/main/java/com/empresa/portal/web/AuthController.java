@@ -1,5 +1,6 @@
 package com.empresa.portal.web;
 
+import com.empresa.portal.config.PasswordHasher;
 import com.empresa.portal.model.Empleado;
 import com.empresa.portal.repo.EmpleadoRepository;
 import com.empresa.portal.web.dto.EmpleadoDto;
@@ -15,8 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * Login/logout simulado. El único empleado sembrado (id=1) inicia sesión si el
- * username coincide con el suyo; cualquier contraseña es válida.
+ * Login/logout. Se busca al empleado por username; si tiene contraseña
+ * guardada (password_hash) debe coincidir, y si no, cualquier contraseña es
+ * válida (login simulado).
  */
 @RestController
 @RequestMapping("/api")
@@ -36,14 +38,19 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest body, HttpSession session) {
         String username = body == null ? null : body.username();
-        Empleado empleado = repo.findById(EMPLEADO_ID).orElse(null);
+        Empleado empleado = username == null ? null : repo.findByUsername(username).orElse(null);
 
-        if (empleado == null || username == null || !username.equals(empleado.getUsername())) {
+        if (empleado == null || !passwordValida(empleado, body.password())) {
             return ResponseEntity.status(401).body(Map.of("error", "Usuario o contraseña no válidos"));
         }
 
         session.setAttribute(SESSION_KEY, empleado.getId());
         return ResponseEntity.ok(EmpleadoDto.from(empleado));
+    }
+
+    private boolean passwordValida(Empleado empleado, String password) {
+        String hash = empleado.getPasswordHash();
+        return hash == null || PasswordHasher.matches(password, hash);
     }
 
     @PostMapping("/logout")

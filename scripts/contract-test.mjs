@@ -80,6 +80,16 @@ async function suite(base) {
     r = await c.request('POST', '/api/login', { username: 'usuario-inexistente', password: 'x' });
     check('POST /api/login username incorrecto → 401', r.status === 401, `status=${r.status}`, shape(r));
 
+    r = await c.request('POST', '/api/login', { username: 'sherpai', password: 'incorrecta' });
+    check('POST /api/login sherpai con contraseña incorrecta → 401', r.status === 401, `status=${r.status}`, shape(r));
+
+    r = await c.request('POST', '/api/login', { username: 'sherpai', password: '1234' });
+    check('POST /api/login sherpai con contraseña correcta → 200 + perfil + cookie',
+      r.status === 200 && hasKeys(r.json, PERFIL_KEYS) && c.cookies.size > 0,
+      `status=${r.status} keys=${keysOf(r.json)} cookies=${c.cookies.size}`, shape(r));
+    await c.request('POST', '/api/logout');
+    c.clearCookies();
+
     // --- Login ---
     r = await c.request('POST', '/api/login', { username: USERNAME, password: CLAVE_ARBITRARIA });
     check('POST /api/login correcto → 200 + perfil + cookie',
